@@ -22,27 +22,27 @@ export default function Header() {
   }
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
-      <div className="w-full px-4 sm:px-6 lg:px-8">
+    <header className="bg-white shadow-xs sticky top-0 z-50 w-full border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 w-full">
 
         {/* الشريط الرئيسي */}
-        <div className="flex items-center justify-between h-20 gap-4">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-2 sm:gap-4">
 
           {/* الشعار واسم المتجر بالخط والتنسيق الأصلي */}
           <Link
             href="/"
-            className="flex items-center gap-2 shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2 shrink-0"
           >
             <Image
               src="/mylogo.png"
               alt="متجر الواسطة"
               width={40}
               height={40}
-              className="w-10 h-10 object-contain"
+              className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               priority
             />
 
-            <span className="store-name">
+            <span className="store-name text-base sm:text-xl">
               متجر <span>الواسطة</span>
             </span>
           </Link>
@@ -75,7 +75,7 @@ export default function Header() {
           </nav>
 
           {/* أدوات المستخدم */}
-          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
 
             {/* مبدل العملات */}
             <CurrencySelector />

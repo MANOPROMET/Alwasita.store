@@ -65,11 +65,14 @@ function GoogleIcon({ className = 'w-5 h-5' }: { className?: string }) {
 function AccountContent() {
   const searchParams = useSearchParams();
   const urlAuthError = searchParams?.get('error');
+  const oauthUserId = searchParams?.get('userId');
+  const oauthSecret = searchParams?.get('secret');
 
   const {
     user,
     loading: authLoading,
     loginWithGoogle,
+    createSessionFromOAuth,
     loginWithEmail,
     registerWithEmail,
     logout,
@@ -83,6 +86,26 @@ function AccountContent() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showGoogleHelp, setShowGoogleHelp] = useState(false);
+
+  // تبادل رمز OAuth2 تلقائياً عند العودة من Google
+  useEffect(() => {
+    if (oauthUserId && oauthSecret) {
+      const exchangeOAuthToken = async () => {
+        try {
+          setIsLoggingIn(true);
+          await createSessionFromOAuth(oauthUserId, oauthSecret);
+          if (typeof window !== 'undefined') {
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } catch (err) {
+          console.error('Failed to exchange OAuth token:', err);
+        } finally {
+          setIsLoggingIn(false);
+        }
+      };
+      exchangeOAuthToken();
+    }
+  }, [oauthUserId, oauthSecret]);
 
   // تسجيل الدخول بالبريد الإلكتروني
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');

@@ -1,5 +1,4 @@
-// app/layout.tsx
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Tajawal, Cairo } from 'next/font/google';
 import './globals.css';
 import Header from './components/Header';
@@ -23,6 +22,14 @@ const cairo = Cairo({
   variable: '--font-cairo',
 });
 
+// ضبط العرض للشاشات وأجهزة الجوال (Responsive Viewport) لمنع تشويه المقاس أو انكماش العرض
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: '#7d38d9',
+};
+
 // معلومات الموقع (SEO)
 export const metadata: Metadata = {
   title: {
@@ -38,8 +45,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${cairo.variable}`}>
-      <body className="font-tajawal min-h-screen flex flex-col bg-gray-50 text-gray-900">
+    <html lang="ar" dir="rtl" className={`${tajawal.variable} ${cairo.variable} w-full max-w-full overflow-x-hidden`}>
+      <body className="font-tajawal min-h-screen flex flex-col bg-gray-50 text-gray-900 w-full max-w-full overflow-x-hidden antialiased">
         <AuthProvider>
           <WishlistProvider>
             <CurrencyProvider>

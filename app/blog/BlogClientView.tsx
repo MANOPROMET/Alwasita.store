@@ -12,6 +12,15 @@ import {
   X,
   Sparkles,
   ExternalLink,
+  Newspaper,
+  Smartphone,
+  Tablet,
+  BatteryCharging,
+  Wifi,
+  ShoppingBag,
+  Wrench,
+  ShieldCheck,
+  Bookmark,
 } from 'lucide-react';
 import { BlogPost } from '@/types';
 import { getProductImageUrl } from '@/lib/appwrite/utils';
@@ -20,13 +29,16 @@ interface BlogClientViewProps {
   initialPosts: BlogPost[];
 }
 
-// قائمة التبويبات المعتمدة حسب طلب المتجر
+// قائمة التبويبات الرسمية بأيقونات SVG برمجية نظيفة بدون دبابيس أو إيموجيات عشوائية
 const PRESET_CATEGORIES = [
-  { id: 'general', label: 'أخبار ومقالات عامة', icon: '📰' },
-  { id: 'phones', label: 'هواتف ذكية', icon: '📱' },
-  { id: 'tablets', label: 'أجهزة لوحية', icon: '💻' },
-  { id: 'chargers', label: 'شواحن وطاقة', icon: '🔋' },
-  { id: 'networking', label: 'أجهزة الشبكات', icon: '🌐' },
+  { id: 'general', label: 'أخبار ومقالات عامة', icon: Newspaper },
+  { id: 'phones', label: 'هواتف ذكية', icon: Smartphone },
+  { id: 'tablets', label: 'أجهزة لوحية', icon: Tablet },
+  { id: 'chargers', label: 'شواحن وطاقة', icon: BatteryCharging },
+  { id: 'networking', label: 'أجهزة الشبكات', icon: Wifi },
+  { id: 'buying-guides', label: 'إرشادات الشراء', icon: ShoppingBag },
+  { id: 'maintenance', label: 'صيانة وعناية', icon: Wrench },
+  { id: 'tips', label: 'نصائح وحماية', icon: ShieldCheck },
 ];
 
 export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
@@ -79,6 +91,21 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
       return cat.includes('شبكات') || cat.includes('راوتر') || cat.includes('network') || cat.includes('router');
     }
 
+    // 6. إرشادات الشراء
+    if (tag === 'buying-guides') {
+      return cat.includes('إرشادات') || cat.includes('شراء') || cat.includes('دليل') || cat.includes('guide');
+    }
+
+    // 7. صيانة وعناية
+    if (tag === 'maintenance') {
+      return cat.includes('صيانة') || cat.includes('عناية') || cat.includes('repair') || cat.includes('maintenance');
+    }
+
+    // 8. نصائح وحماية
+    if (tag === 'tips') {
+      return cat.includes('نصائح') || cat.includes('حماية') || cat.includes('tips') || cat.includes('security');
+    }
+
     // أي تصنيف إضافي تم اختياره
     return post.category === tag;
   };
@@ -96,6 +123,12 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
       c.includes('شبكات') ||
       c.includes('راوتر') ||
       c.includes('أخبار ومقالات عامة') ||
+      c.includes('إرشادات') ||
+      c.includes('شراء') ||
+      c.includes('صيانة') ||
+      c.includes('عناية') ||
+      c.includes('نصائح') ||
+      c.includes('حماية') ||
       c === 'عام';
     return !isStandard;
   });
@@ -174,7 +207,7 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       
       {/* المقال / الجهاز المميز داخل القسم المختار في الأعلى */}
       {featuredPost && !searchQuery && (
@@ -248,55 +281,67 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
         </div>
       )}
 
-      {/* شريط الفلاتر والبحث */}
+      {/* شريط الفلاتر والبحث (يدعم الالتفاف على الكمبيوتر بدون مشاكل تمرير، والتمرير السلس على الجوال) */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-3 sm:p-4 rounded-3xl border border-gray-200/80 shadow-2xs">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 bg-white p-3 sm:p-5 rounded-3xl border border-gray-200/80 shadow-2xs">
           
-          {/* تبويبات الأقسام والمواصفات */}
-          <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0" style={{ scrollbarWidth: 'none' }}>
-            {PRESET_CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedTag(cat.id)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
-                  selectedTag === cat.id
-                    ? 'bg-[var(--color-primary)] text-white shadow-xs'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <span>{cat.icon}</span>
-                <span>{cat.label}</span>
-              </button>
-            ))}
+          {/* تبويبات الأقسام والمواصفات: تلتف بسلاسة على شاشات الكمبيوتر (md:flex-wrap) وتمرر أفقياً على الجوال */}
+          <div
+            className="flex items-center gap-2 overflow-x-auto md:flex-wrap flex-1 pb-1 md:pb-0 scroll-smooth"
+            style={{ scrollbarWidth: 'none' }}
+          >
+            {PRESET_CATEGORIES.map((cat) => {
+              const IconComp = cat.icon;
+              const isSelected = selectedTag === cat.id;
 
-            {customCategories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedTag(cat)}
-                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-1.5 ${
-                  selectedTag === cat
-                    ? 'bg-[var(--color-primary)] text-white shadow-xs'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <span>📌</span>
-                <span>{cat}</span>
-              </button>
-            ))}
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedTag(cat.id)}
+                  className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-[var(--color-primary)] text-white shadow-xs'
+                      : 'bg-gray-100/90 text-gray-700 hover:bg-gray-200/90'
+                  }`}
+                >
+                  <IconComp className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                  <span>{cat.label}</span>
+                </button>
+              );
+            })}
+
+            {customCategories.map((cat) => {
+              const isSelected = selectedTag === cat;
+
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedTag(cat)}
+                  className={`px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-[var(--color-primary)] text-white shadow-xs'
+                      : 'bg-gray-100/90 text-gray-700 hover:bg-gray-200/90'
+                  }`}
+                >
+                  <Bookmark className={`w-4 h-4 shrink-0 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                  <span>{cat}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* خانة البحث */}
-          <div className="relative w-full md:w-72 shrink-0">
+          <div className="relative w-full lg:w-72 shrink-0">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="بحث في المقالات والأجهزة..."
-              className="w-full px-4 py-2 pr-9 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition"
+              className="w-full px-4 py-2.5 pr-9 bg-gray-50 border border-gray-200 rounded-xl text-xs sm:text-sm focus:outline-none focus:border-[var(--color-primary)] focus:bg-white transition"
             />
-            <Search className="w-4 h-4 text-gray-400 absolute top-2.5 right-3" />
+            <Search className="w-4 h-4 text-gray-400 absolute top-3 right-3" />
           </div>
         </div>
       </div>
@@ -394,6 +439,12 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
               ? 'لا توجد شواحن وبنوك طاقة مضافة في هذا القسم حالياً'
               : selectedTag === 'networking'
               ? 'لا توجد أجهزة شبكات مضافة في هذا القسم حالياً'
+              : selectedTag === 'buying-guides'
+              ? 'لا توجد مقالات في قسم إرشادات الشراء حالياً'
+              : selectedTag === 'maintenance'
+              ? 'لا توجد مقالات في قسم الصيانة والعناية حالياً'
+              : selectedTag === 'tips'
+              ? 'لا توجد مقالات في قسم النصائح والحماية حالياً'
               : 'لا توجد عناصر مطابقة'}
           </h4>
           <p className="text-xs text-gray-500">

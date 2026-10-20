@@ -8,6 +8,7 @@ interface AuthContextType {
   user: Models.User<Models.Preferences> | null;
   loading: boolean;
   loginWithGoogle: () => Promise<void>;
+  createSessionFromOAuth: (userId: string, secret: string) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
   registerWithEmail: (email: string, password: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -42,22 +43,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthError(null);
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      const redirectUrl = `${origin}/account`;
-      const failureUrl = `${origin}/account?error=auth_failed`;
+      const success = `${origin}/account`;
+      const failure = `${origin}/account?error=auth_failed`;
 
-      // إنشاء جلسة تسجيل الدخول باستخدام حساب Google الرسمي عبر Appwrite OAuth2
-      account.createOAuth2Session(
-        OAuthProvider.Google,
-        redirectUrl,
-        failureUrl
-      );
+      // استخدام OAuth2 Token Flow الحديث المعتمد من Appwrite لضمان عدم حظر الكوكيز
+      await account.createOAuth2Token({
+        provider: OAuthProvider.Google,
+        success,
+        failure,
+      });
     } catch (err: any) {
       console.error('Google OAuth error:', err);
       if (err?.code === 412 || err?.type === 'project_provider_disabled') {
-        setAuthError('مزود Google غير مفعل حالياً في إعدادات Appwrite. يرجى تفعيله من لوحة التحكم أو استخدام البريد الإلكتروني.');
+        setAuthError('مزود Google غير مفعل حالياً في لوحة تحكم Appwrite.');
       } else {
         setAuthError(err?.message || 'تعذر بدء تسجيل الدخول عبر Google');
       }
+      throw err;
+    }
+  };
+
+  const createSessionFromOAuth = async (userId: string, secret: string) => {
+    setAuthError(null);
+    try {
+      await account.createSession({ userId, secret });
+      await refreshUser();
+    } catch (err: any) {
+      console.error('OAuth session creation error:', err);
+      setAuthError(err?.message || 'تعذر إتمام جلسة تسجيل الدخول عبر Google');
       throw err;
     }
   };
@@ -120,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         loginWithGoogle,
+        createSessionFromOAuth,
         loginWithEmail,
         registerWithEmail,
         logout,

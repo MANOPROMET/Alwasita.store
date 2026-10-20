@@ -48,8 +48,8 @@ export default function Footer() {
     const storeAddress = settings?.storeAddress || 'اليمن - صنعاء / عدن';
 
     return (
-        <footer className="bg-[#121215] text-gray-400 border-t border-gray-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <footer className="bg-[#121215] text-gray-400 border-t border-gray-800 w-full overflow-hidden">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 w-full">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
 
                     {/* العمود 1: معلومات المتجر والشعار */}
