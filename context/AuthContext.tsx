@@ -10,7 +10,8 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   createSessionFromOAuth: (userId: string, secret: string) => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<void>;
-  registerWithEmail: (email: string, password: string, name: string) => Promise<void>;
+  registerWithEmail: (email: string, password: string, name: string, phone?: string) => Promise<void>;
+  updateUserProfile: (data: { name?: string; phone?: string; city?: string; address?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   authError: string | null;
@@ -39,12 +40,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     refreshUser();
   }, []);
 
+// مانع تكرار استهلاك الرمز في وضع التطوير والتحديث المتكرر
+const processedOAuthTokens = new Set<string>();
+
   const loginWithGoogle = async () => {
     setAuthError(null);
     try {
       const origin = typeof window !== 'undefined' ? window.location.origin : '';
-      const success = `${origin}/account`;
-      const failure = `${origin}/account?error=auth_failed`;
+      const success = `${origin}/auth/success`;
+      const failure = `${origin}/auth/failure`;
 
       // استخدام OAuth2 Token Flow الحديث المعتمد من Appwrite لضمان عدم حظر الكوكيز
       await account.createOAuth2Token({
@@ -64,11 +68,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const createSessionFromOAuth = async (userId: string, secret: string) => {
+    const tokenKey = `${userId}:${secret}`;
+    if (processedOAuthTokens.has(tokenKey)) {
+      // تم البدء في معالجة هذا الرمز مسبقاً، نكتفي بتحديث بيانات المستخدم
+      await refreshUser();
+      return;
+    }
+    processedOAuthTokens.add(tokenKey);
+
     setAuthError(null);
     try {
+      // 1. التحقق أولاً مما إذا كانت هناك جلسة نشطة بالفعل لهذا المستخدم
+      try {
+        const currentUser = await account.get();
+        if (currentUser && currentUser.$id === userId) {
+          setUser(currentUser);
+          return;
+        }
+      } catch {
+        // لا توجد جلسة نشطة، نواصل الإنشاء
+      }
+
+      // 2. إنشاء الجلسة باستخدام الـ userId والـ secret
       await account.createSession({ userId, secret });
       await refreshUser();
     } catch (err: any) {
+      // 3. في حال كان الخطأ "Invalid token passed in the request"،
+      // نتحقق مما إذا كان الطلب المتزامن قد أنشأ الجلسة بالفعل واستهلك الرمز ذي الاستخدام الواحد
+      try {
+        const verifiedUser = await account.get();
+        if (verifiedUser) {
+          setUser(verifiedUser);
+          setAuthError(null);
+          return;
+        }
+      } catch {
+        // فشل حقيقي
+      }
+
       console.error('OAuth session creation error:', err);
       setAuthError(err?.message || 'تعذر إتمام جلسة تسجيل الدخول عبر Google');
       throw err;
@@ -98,12 +135,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const registerWithEmail = async (email: string, password: string, name: string) => {
+  const registerWithEmail = async (email: string, password: string, name: string, phone?: string) => {
     setAuthError(null);
     try {
       await account.create(ID.unique(), email.trim(), password, name.trim());
       // تسجيل الدخول مباشرة بعد إنشاء الحساب
       await account.createEmailPasswordSession(email.trim(), password);
+      // حفظ رقم الهاتف في التفضيلات إن وجد
+      if (phone && phone.trim()) {
+        try {
+          await account.updatePrefs({ phone: phone.trim() });
+        } catch (e) {
+          console.warn('Could not save phone to user prefs:', e);
+        }
+      }
       await refreshUser();
     } catch (err: any) {
       console.error('Email registration error:', err);
@@ -114,6 +159,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         msg = 'كلمة المرور يجب أن تكون 8 خانات على الأقل.';
       }
       setAuthError(msg);
+      throw err;
+    }
+  };
+
+  const updateUserProfile = async (data: { name?: string; phone?: string; city?: string; address?: string }) => {
+    setAuthError(null);
+    try {
+      if (data.name && data.name.trim() && data.name.trim() !== user?.name) {
+        await account.updateName(data.name.trim());
+      }
+      const currentPrefs = (user?.prefs as Record<string, any>) || {};
+      const newPrefs = {
+        ...currentPrefs,
+        ...(data.phone !== undefined ? { phone: data.phone.trim() } : {}),
+        ...(data.city !== undefined ? { city: data.city.trim() } : {}),
+        ...(data.address !== undefined ? { address: data.address.trim() } : {}),
+      };
+      await account.updatePrefs(newPrefs);
+      await refreshUser();
+    } catch (err: any) {
+      console.error('Error updating user profile:', err);
+      setAuthError(err?.message || 'تعذر تحديث بيانات الحساب');
       throw err;
     }
   };
@@ -136,6 +203,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         createSessionFromOAuth,
         loginWithEmail,
         registerWithEmail,
+        updateUserProfile,
         logout,
         refreshUser,
         authError,

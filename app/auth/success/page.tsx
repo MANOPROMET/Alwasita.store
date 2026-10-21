@@ -1,43 +1,55 @@
 'use client';
 
-import React, { useEffect, useState, Suspense } from 'react';
+import React, { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { account } from '@/lib/appwrite/client';
+import { useAuth } from '@/context/AuthContext';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 
 function OAuthSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { createSessionFromOAuth, user } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorText, setErrorText] = useState('');
+  const handledRef = useRef(false);
 
   useEffect(() => {
+    if (handledRef.current) return;
+
     const userId = searchParams?.get('userId');
     const secret = searchParams?.get('secret');
 
+    // إذا لم تكن هناك بارامترات ولكن المستخدم مسجل بالفعل
     if (!userId || !secret) {
+      if (user) {
+        setStatus('success');
+        window.location.replace('/account');
+        return;
+      }
       setStatus('error');
       setErrorText('بيانات المصادقة مفقودة من الرابط');
       return;
     }
 
-    const createSession = async () => {
+    handledRef.current = true;
+
+    const handleExchange = async () => {
       try {
-        await account.createSession({ userId, secret });
+        await createSessionFromOAuth(userId, secret);
         setStatus('success');
         setTimeout(() => {
-          router.replace('/account');
-        }, 1200);
+          window.location.replace('/account');
+        }, 800);
       } catch (err: any) {
-        console.error('Failed to create OAuth session:', err);
+        console.error('Failed to create OAuth session in callback:', err);
         setStatus('error');
-        setErrorText(err?.message || 'تعذر إنشاء جلسة الدخول');
+        setErrorText(err?.message || 'تعذر إتمام تسجيل الدخول');
       }
     };
 
-    createSession();
-  }, [searchParams, router]);
+    handleExchange();
+  }, [searchParams, createSessionFromOAuth, user]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

@@ -11,7 +11,7 @@ export default function WhatsappButton() {
         return null;
     }
 
-    const phoneNumber = '00967771211394';
+    const phoneNumber = '+967771211394';
     const message = 'مرحباً، أريد الاستفسار عن المنتجات';
 
     return (
