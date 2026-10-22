@@ -12,7 +12,7 @@ if (typeof window === 'undefined') {
 }
 
 const endpoint = process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT || "https://fra.cloud.appwrite.io/v1";
-const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID!;
+const projectId = process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID || "6a79cc3c0029e33756c8";
 const apiKey = process.env.APPWRITE_API_KEY!;
 
 const client = new Client()

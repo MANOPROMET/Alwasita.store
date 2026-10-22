@@ -17,6 +17,8 @@ import {
   Layers,
 } from 'lucide-react';
 
+import KeySpecsEditor, { SpecItem, SPEC_TEMPLATES } from '../components/KeySpecsEditor';
+
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
 
 interface ImageItem {
@@ -43,6 +45,9 @@ export default function NewProductPage() {
   const [condition, setCondition] = useState<'new' | 'used'>('new');
   const [conditionLabel, setConditionLabel] = useState('جديد');
 
+  // المواصفات الأساسية والسمات السريعة
+  const [keySpecs, setKeySpecs] = useState<SpecItem[]>([]);
+
   // النسخ (الذاكرة، الرام، السعر)
   const [variants, setVariants] = useState([
     { storage: '128GB', ram: '8GB', price: '', compareAtPrice: '' },
@@ -61,7 +66,20 @@ export default function NewProductPage() {
         const res = await databases.listDocuments(DATABASE_ID, 'categories');
         setCategories(res.documents);
         if (res.documents.length > 0) {
-          setCategoryId(res.documents[0].$id);
+          const firstId = res.documents[0].$id;
+          setCategoryId(firstId);
+
+          // تهيئة المواصفات المقترحة لأول قسم
+          const firstCat = res.documents[0];
+          const slug = (firstCat.slug || '').toLowerCase();
+          let templateKey = 'smartphones';
+          if (slug.includes('tablet')) templateKey = 'tablets';
+          else if (slug.includes('network')) templateKey = 'networks';
+          else if (slug.includes('access')) templateKey = 'accessories';
+          
+          if (SPEC_TEMPLATES[templateKey]) {
+            setKeySpecs(SPEC_TEMPLATES[templateKey].items.map((i) => ({ label: i.label, value: '' })));
+          }
         }
       } catch (err) {
         console.error('Error fetching categories:', err);
@@ -205,6 +223,9 @@ export default function NewProductPage() {
         imageColorsList.push(item.colorName || '');
       });
       formData.append('imageColors', JSON.stringify(imageColorsList));
+
+      const validKeySpecs = keySpecs.filter((s) => s.label.trim() && s.value.trim());
+      formData.append('keySpecs', JSON.stringify(validKeySpecs));
 
       const res = await fetch('/api/admin/products', {
         method: 'POST',
@@ -443,7 +464,15 @@ export default function NewProductPage() {
           </div>
         </div>
 
-        {/* 2. الألوان المميزة للمنتج */}
+        {/* 2. المواصفات الأساسية والسمات السريعة للمنتج حسب القسم */}
+        <KeySpecsEditor
+          categoryId={categoryId}
+          categories={categories}
+          specs={keySpecs}
+          onChange={setKeySpecs}
+        />
+
+        {/* 3. الألوان المميزة للمنتج */}
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-6">
           <div className="flex items-center justify-between border-b border-gray-100 pb-4">
             <div className="flex items-center gap-2">

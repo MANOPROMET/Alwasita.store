@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { getProductImageUrl } from '@/lib/appwrite/utils';
 import { Category, Product } from '@/types';
+import KeySpecsEditor, { SpecItem } from '../../components/KeySpecsEditor';
 
 interface EditProductFormProps {
   initialProduct: Product;
@@ -48,6 +49,26 @@ export default function EditProductForm({
   const [conditionLabel, setConditionLabel] = useState(
     initialProduct.conditionLabel || (initialProduct.condition === 'used' ? 'مستخدم' : 'جديد')
   );
+
+  // استخراج المواصفات الأساسية المخصصة الأولية
+  let initialParsedSpecs: SpecItem[] = [];
+  if (initialProduct.keySpecs) {
+    try {
+      const parsed =
+        typeof initialProduct.keySpecs === 'string'
+          ? JSON.parse(initialProduct.keySpecs)
+          : initialProduct.keySpecs;
+      if (Array.isArray(parsed)) {
+        initialParsedSpecs = parsed.filter(
+          (item: any) => item && typeof item === 'object' && item.label
+        );
+      }
+    } catch {
+      initialParsedSpecs = [];
+    }
+  }
+
+  const [keySpecs, setKeySpecs] = useState<SpecItem[]>(initialParsedSpecs);
 
   // النسخ والأسعار
   const initialVariants =
@@ -138,6 +159,9 @@ export default function EditProductForm({
         formData.append('images', file);
       });
       formData.append('imageColors', JSON.stringify(newImageFiles.map(() => '')));
+
+      const validKeySpecs = keySpecs.filter((s) => s.label.trim() && s.value.trim());
+      formData.append('keySpecs', JSON.stringify(validKeySpecs));
 
       const res = await fetch('/api/admin/products', {
         method: 'PUT',
@@ -356,7 +380,15 @@ export default function EditProductForm({
         </div>
       </div>
 
-      {/* 2. الألوان */}
+      {/* 2. المواصفات الأساسية والسمات السريعة للمنتج حسب القسم */}
+      <KeySpecsEditor
+        categoryId={categoryId}
+        categories={categories}
+        specs={keySpecs}
+        onChange={setKeySpecs}
+      />
+
+      {/* 3. الألوان */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-xs space-y-6">
         <div className="flex items-center justify-between border-b border-gray-100 pb-4">
           <div className="flex items-center gap-2">

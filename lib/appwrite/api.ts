@@ -48,10 +48,25 @@ async function enrichProducts(products: Product[]): Promise<Product[]> {
                 const condition = (product as any).condition || 'new';
                 const conditionLabel = (product as any).conditionLabel || (condition === 'used' ? 'مستخدم' : 'جديد');
 
+                // معالجة المواصفات الأساسية المخصصة
+                let keySpecs: any[] = [];
+                const rawKeySpecs = (product as any).keySpecs;
+                if (rawKeySpecs) {
+                    try {
+                        const parsed = typeof rawKeySpecs === 'string' ? JSON.parse(rawKeySpecs) : rawKeySpecs;
+                        if (Array.isArray(parsed)) {
+                            keySpecs = parsed.filter((item: any) => item && typeof item === 'object' && item.label?.trim() && item.value?.trim());
+                        }
+                    } catch {
+                        keySpecs = [];
+                    }
+                }
+
                 return {
                     ...product,
                     condition,
                     conditionLabel,
+                    keySpecs,
                     variants,
                     colors,
                     images,
@@ -60,7 +75,7 @@ async function enrichProducts(products: Product[]): Promise<Product[]> {
                 };
             } catch (err) {
                 console.error(`Error enriching product ${product?.$id}:`, err);
-                return { ...product, variants: [], colors: [], images: [], price: 0, mainImageFileId: '/window.svg' };
+                return { ...product, keySpecs: [], variants: [], colors: [], images: [], price: 0, mainImageFileId: '/window.svg' };
             }
         })
     );

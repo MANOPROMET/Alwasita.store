@@ -58,6 +58,11 @@ export interface ProductImage {
     color?: Color | string;
 }
 
+export interface KeySpec {
+    label: string;
+    value: string;
+}
+
 export interface Product {
     $id: string;
     name: string;
@@ -77,6 +82,7 @@ export interface Product {
     colors?: Color[];
     variants?: Variant[];
     images?: ProductImage[];
+    keySpecs?: string | KeySpec[]; // المواصفات الأساسية المخصصة
     $createdAt?: string;
     $updatedAt?: string;
 }

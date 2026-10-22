@@ -41,6 +41,7 @@ export async function POST(request: Request) {
     const variantsRaw = (formData.get('variants') as string) || '[]';
     const colorsRaw = (formData.get('colors') as string) || '[]';
     const imageColorsRaw = (formData.get('imageColors') as string) || '[]';
+    const keySpecsRaw = (formData.get('keySpecs') as string) || '[]';
 
     const variants = JSON.parse(variantsRaw);
     const colors: string[] = JSON.parse(colorsRaw);
@@ -77,6 +78,7 @@ export async function POST(request: Request) {
       name: name.trim(),
       slug: generatedSlug,
       description: description.trim(),
+      keySpecs: keySpecsRaw,
       isActive: Boolean(isActive),
       isFeatured: Boolean(isFeatured),
       isOffer: Boolean(isOffer),
@@ -198,6 +200,7 @@ export async function PUT(request: Request) {
     const variants = JSON.parse(variantsRaw);
     const colors: string[] = JSON.parse(colorsRaw);
     const imageColors: string[] = JSON.parse(imageColorsRaw);
+    const keySpecsRaw = formData.get('keySpecs') as string;
 
     if (!name.trim()) {
       return NextResponse.json({ error: 'اسم المنتج مطلوب' }, { status: 400 });
@@ -209,6 +212,10 @@ export async function PUT(request: Request) {
       description: description.trim(),
       isActive: Boolean(isActive),
     };
+
+    if (keySpecsRaw !== undefined && keySpecsRaw !== null) {
+      productPayload.keySpecs = keySpecsRaw;
+    }
 
     if (condition) productPayload.condition = condition === 'used' ? 'used' : 'new';
     if (conditionLabel !== undefined && conditionLabel !== null) {

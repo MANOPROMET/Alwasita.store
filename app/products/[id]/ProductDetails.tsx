@@ -2,7 +2,26 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ShoppingCart, MessageCircle, ShieldCheck, Truck, ArrowRight, Check, Heart } from 'lucide-react';
+import {
+    ShoppingCart,
+    MessageCircle,
+    ShieldCheck,
+    Truck,
+    ArrowRight,
+    Check,
+    Heart,
+    Cpu,
+    HardDrive,
+    Camera,
+    Palette,
+    PenTool,
+    Monitor,
+    Wifi,
+    Radio,
+    Zap,
+    Sparkles,
+    Layers,
+} from 'lucide-react';
 import Link from 'next/link';
 import { Product, Variant, Color } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -11,6 +30,42 @@ import { useWishlist } from '@/context/WishlistContext';
 
 interface ProductDetailsProps {
     product: Product;
+}
+
+// دالة اختيار الأيقونة المناسبة للخاصية بناء على مسمّاها
+function getSpecIcon(label: string) {
+    const l = (label || '').toLowerCase();
+    if (l.includes('معالج') || l.includes('بروسيسور') || l.includes('cpu') || l.includes('chip')) {
+        return <Cpu className="w-5 h-5" />;
+    }
+    if (l.includes('ذاكر') || l.includes('رام') || l.includes('ram') || l.includes('تخزين') || l.includes('storage') || l.includes('rom')) {
+        return <HardDrive className="w-5 h-5" />;
+    }
+    if (l.includes('كاميرا') || l.includes('كيمرا') || l.includes('تصوير') || l.includes('camera') || l.includes('عدس')) {
+        return <Camera className="w-5 h-5" />;
+    }
+    if (l.includes('لون') || l.includes('ألوان') || l.includes('الوان') || l.includes('color')) {
+        return <Palette className="w-5 h-5" />;
+    }
+    if (l.includes('قلم') || l.includes('pen') || l.includes('stylus')) {
+        return <PenTool className="w-5 h-5" />;
+    }
+    if (l.includes('شاش') || l.includes('screen') || l.includes('display') || l.includes('مقاس')) {
+        return <Monitor className="w-5 h-5" />;
+    }
+    if (l.includes('شبك') || l.includes('واي فاي') || l.includes('wifi') || l.includes('router') || l.includes('راوتر') || l.includes('مودم') || l.includes('5g') || l.includes('4g') || l.includes('lte') || l.includes('سرع')) {
+        return <Wifi className="w-5 h-5" />;
+    }
+    if (l.includes('تردد') || l.includes('هوائي') || l.includes('نطاق') || l.includes('تغطي')) {
+        return <Radio className="w-5 h-5" />;
+    }
+    if (l.includes('شاحن') || l.includes('شحن') || l.includes('بطار') || l.includes('power') || l.includes('battery') || l.includes('mah') || l.includes('واط') || l.includes('watt') || l.includes('w')) {
+        return <Zap className="w-5 h-5" />;
+    }
+    if (l.includes('حماي') || l.includes('ضمان') || l.includes('مقاوم') || l.includes('water') || l.includes('ip68') || l.includes('ip67')) {
+        return <ShieldCheck className="w-5 h-5" />;
+    }
+    return <Sparkles className="w-5 h-5" />;
 }
 
 // دالة تحويل اسم اللون بالعربي/الانجليزي إلى كود لون دقيق وتحديد التباين
@@ -222,6 +277,32 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
     const hasColors = validColors.length > 0;
 
+    // استخراج وتصفية المواصفات والسمات الأساسية للمنتج (استبعاد أي خاصية فارغة)
+    const validKeySpecs: { label: string; value: string }[] = (() => {
+        if (!product.keySpecs) return [];
+        let specs: any = product.keySpecs;
+        if (typeof specs === 'string') {
+            try {
+                specs = JSON.parse(specs);
+            } catch {
+                return [];
+            }
+        }
+        if (!Array.isArray(specs)) return [];
+        return specs.filter(
+            (s: any) =>
+                s &&
+                typeof s === 'object' &&
+                typeof s.label === 'string' &&
+                s.label.trim().length > 0 &&
+                typeof s.value === 'string' &&
+                s.value.trim().length > 0
+        ).map((s: any) => ({
+            label: s.label.trim(),
+            value: s.value.trim()
+        }));
+    })();
+
     // التبديل إلى لون وتغيير الصورة المرتبطة به إن وجدت (أو الصورة المقابلة في المعرض)
     const handleColorChange = (c: Color, colorIdx: number) => {
         setSelectedColor(c);
@@ -393,6 +474,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             </div>
                         );
                     })()}
+
+                    {/* مقتطف سريع لأبرز المواصفات الأساسية */}
+                    {validKeySpecs.length > 0 && (
+                        <div className="flex flex-wrap gap-2 pt-1">
+                            {validKeySpecs.slice(0, 4).map((spec, i) => (
+                                <div
+                                    key={i}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-xs shadow-2xs"
+                                >
+                                    <span className="text-gray-400 font-normal">{spec.label}:</span>
+                                    <span className="text-gray-900 font-extrabold">{spec.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* خيارات السعة التخزينية والرام (تظهر فقط إذا كان الجهاز جوال/لوحي وله أكثر من نسخة ذاكرة > 1) */}
                     {hasStorageVariants && (
@@ -584,11 +680,58 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
             </div>
 
-            {/* 3. وصف ومواصفات المنتج */}
+            {/* 3. المواصفات والسمات الأساسية (تظهر فقط إذا كانت محددة وليست فارغة) */}
+            {validKeySpecs.length > 0 && (
+                <div className="card p-6 sm:p-8 space-y-6">
+                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs border border-blue-100">
+                                <Sparkles className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg sm:text-xl font-black text-gray-900">
+                                    المواصفات والسمات الأساسية
+                                </h2>
+                                <p className="text-xs text-gray-400 mt-0.5">
+                                    أهم الخصائص والميزات التقنية المعتمدة للمنتج
+                                </p>
+                            </div>
+                        </div>
+                        <span className="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200">
+                            {validKeySpecs.length} مواصفات
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        {validKeySpecs.map((spec, idx) => (
+                            <div
+                                key={idx}
+                                className="group relative flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 hover:bg-blue-50/40 border border-slate-200/70 hover:border-blue-200 transition-all duration-200 shadow-2xs hover:shadow-xs"
+                            >
+                                <div className="p-2.5 rounded-xl bg-white text-blue-600 shadow-2xs border border-slate-100 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+                                    {getSpecIcon(spec.label)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    {/* عنوان الخاصية: بخط هافت قليلاً ومناسب */}
+                                    <span className="text-xs font-semibold text-gray-400 block mb-1 truncate">
+                                        {spec.label}
+                                    </span>
+                                    {/* السمة / القيمة: بخط بارز ولون مناسب */}
+                                    <span className="text-sm sm:text-base font-black text-gray-900 group-hover:text-blue-700 transition-colors block break-words leading-snug">
+                                        {spec.value}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 4. تفاصيل ومواصفات المنتج الكاملة */}
             {product.description && (
                 <div className="card p-6 sm:p-8 space-y-4">
                     <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3">
-                        تفاصيل ومواصفات المنتج
+                        تفاصيل ومواصفات المنتج الكاملة
                     </h2>
                     <div className="text-gray-600 leading-relaxed text-sm sm:text-base whitespace-pre-line">
                         {product.description}
