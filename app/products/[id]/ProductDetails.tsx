@@ -21,6 +21,8 @@ import {
     Zap,
     Sparkles,
     Layers,
+    Share2,
+    FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Product, Variant, Color } from '@/types';
@@ -154,6 +156,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     );
     const [quantity, setQuantity] = useState(1);
     const [isAdded, setIsAdded] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const [showShareToast, setShowShareToast] = useState(false);
+    const [activeTab, setActiveTab] = useState<'all' | 'specs' | 'description'>('all');
 
     // السعر الحالي بناء على النسخة المحددة أو سعر المنتج الأساسي
     const currentPrice = selectedVariant?.price || product.price || 0;
@@ -360,6 +365,45 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         window.open(`https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(text)}`, '_blank');
     };
 
+    // مشاركة رابط المنتج
+    const handleShare = async () => {
+        const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+        const shareData = {
+            title: product.name,
+            text: `تسوق ${product.name} عبر متجر الواسطة:`,
+            url: shareUrl,
+        };
+
+        if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+            try {
+                await navigator.share(shareData);
+                return;
+            } catch (err: any) {
+                if (err?.name === 'AbortError') return;
+            }
+        }
+
+        // نسخ الرابط إلى الحافظة كبديل فوري
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(shareUrl);
+            } else {
+                const tempInput = document.createElement('input');
+                tempInput.value = shareUrl;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+            }
+            setIsCopied(true);
+            setShowShareToast(true);
+            setTimeout(() => setIsCopied(false), 2500);
+            setTimeout(() => setShowShareToast(false), 2500);
+        } catch (e) {
+            console.error('Failed to copy', e);
+        }
+    };
+
     return (
         <div className="space-y-10">
             {/* رابط الرجوع */}
@@ -474,21 +518,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             </div>
                         );
                     })()}
-
-                    {/* مقتطف سريع لأبرز المواصفات الأساسية */}
-                    {validKeySpecs.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            {validKeySpecs.slice(0, 4).map((spec, i) => (
-                                <div
-                                    key={i}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200/80 text-xs shadow-2xs"
-                                >
-                                    <span className="text-gray-400 font-normal">{spec.label}:</span>
-                                    <span className="text-gray-900 font-extrabold">{spec.value}</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
 
                     {/* خيارات السعة التخزينية والرام (تظهر فقط إذا كان الجهاز جوال/لوحي وله أكثر من نسخة ذاكرة > 1) */}
                     {hasStorageVariants && (
@@ -637,21 +666,44 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             <span>طلب مباشر عبر واتساب</span>
                         </button>
 
-                        {/* زر الإعجاب والمفضلة */}
-                        <button
-                            type="button"
-                            onClick={() => toggleWishlist(product)}
-                            className={`p-3.5 rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                                isLiked
-                                    ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
-                                    : 'bg-white border-gray-200 text-gray-600 hover:text-rose-600 hover:border-rose-200'
-                            }`}
-                            title={isLiked ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
-                            aria-label={isLiked ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
-                        >
-                            <Heart className={`w-5 h-5 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
-                            <span className="text-xs font-bold sm:hidden">{isLiked ? 'في المفضلة' : 'أعجبني'}</span>
-                        </button>
+                        {/* أزرار التفاعل: المفضلة والمشاركة */}
+                        <div className="flex items-center gap-2.5">
+                            {/* زر الإعجاب والمفضلة */}
+                            <button
+                                type="button"
+                                onClick={() => toggleWishlist(product)}
+                                className={`flex-1 sm:flex-none p-3.5 rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs ${
+                                    isLiked
+                                        ? 'bg-rose-50 border-rose-300 text-rose-600 shadow-sm'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:text-rose-600 hover:border-rose-200'
+                                }`}
+                                title={isLiked ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
+                                aria-label={isLiked ? 'إزالة من المفضلة' : 'إضافة إلى المفضلة'}
+                            >
+                                <Heart className={`w-5 h-5 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500 scale-110' : ''}`} />
+                                <span className="text-xs font-bold sm:hidden">{isLiked ? 'في المفضلة' : 'أعجبني'}</span>
+                            </button>
+
+                            {/* زر مشاركة المنتج */}
+                            <button
+                                type="button"
+                                onClick={handleShare}
+                                className={`flex-1 sm:flex-none p-3.5 rounded-2xl border transition-all flex items-center justify-center gap-2 cursor-pointer shadow-2xs ${
+                                    isCopied
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700 shadow-sm'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200'
+                                }`}
+                                title="مشاركة هذا المنتج"
+                                aria-label="مشاركة هذا المنتج"
+                            >
+                                {isCopied ? (
+                                    <Check className="w-5 h-5 text-emerald-600 animate-in zoom-in-75 duration-200" />
+                                ) : (
+                                    <Share2 className="w-5 h-5" />
+                                )}
+                                <span className="text-xs font-bold sm:hidden">{isCopied ? 'تم النسخ' : 'مشاركة'}</span>
+                            </button>
+                        </div>
                     </div>
 
                     {/* تنبيه سريع مع رابط السلة بعد الإضافة */}
@@ -680,62 +732,133 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
             </div>
 
-            {/* 3. المواصفات والسمات الأساسية (تظهر فقط إذا كانت محددة وليست فارغة) */}
-            {validKeySpecs.length > 0 && (
+            {/* 3. قسم المواصفات والتفاصيل الكاملة للمنتج (تصميم موحّد وفق أفضل الممارسات) */}
+            {(validKeySpecs.length > 0 || product.description) && (
                 <div className="card p-6 sm:p-8 space-y-6">
-                    <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                    {/* شريط رأس القسم مع تبويبات ذكية للتبديل السريع */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 shadow-2xs border border-blue-100">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-2xs">
                                 <Sparkles className="w-5 h-5" />
                             </div>
                             <div>
                                 <h2 className="text-lg sm:text-xl font-black text-gray-900">
-                                    المواصفات والسمات الأساسية
+                                    مواصفات وتفاصيل المنتج
                                 </h2>
                                 <p className="text-xs text-gray-400 mt-0.5">
-                                    أهم الخصائص والميزات التقنية المعتمدة للمنتج
+                                    البيانات التقنية والمعلومات المعتمدة لهذا المنتج
                                 </p>
                             </div>
                         </div>
-                        <span className="text-xs font-bold px-3 py-1 bg-gray-100 text-gray-600 rounded-full border border-gray-200">
-                            {validKeySpecs.length} مواصفات
-                        </span>
+
+                        {/* أزرار التبويبات (تظهر فقط عند توفر المواصفات والوصف معاً لسهولة التنقل) */}
+                        {validKeySpecs.length > 0 && product.description && (
+                            <div className="inline-flex items-center p-1 bg-gray-100/80 rounded-2xl border border-gray-200/60 text-xs font-bold self-start sm:self-auto">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('specs')}
+                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
+                                        activeTab === 'specs'
+                                            ? 'bg-white text-blue-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <Zap className="w-3.5 h-3.5" />
+                                    <span>المواصفات الأساسية</span>
+                                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-600 font-extrabold">
+                                        {validKeySpecs.length}
+                                    </span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('description')}
+                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
+                                        activeTab === 'description'
+                                            ? 'bg-white text-blue-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <FileText className="w-3.5 h-3.5" />
+                                    <span>الوصف الكامل</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('all')}
+                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer ${
+                                        activeTab === 'all'
+                                            ? 'bg-white text-blue-600 shadow-xs'
+                                            : 'text-gray-500 hover:text-gray-900'
+                                    }`}
+                                >
+                                    <span>الكل</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {validKeySpecs.map((spec, idx) => (
-                            <div
-                                key={idx}
-                                className="group relative flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 hover:bg-blue-50/40 border border-slate-200/70 hover:border-blue-200 transition-all duration-200 shadow-2xs hover:shadow-xs"
-                            >
-                                <div className="p-2.5 rounded-xl bg-white text-blue-600 shadow-2xs border border-slate-100 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-                                    {getSpecIcon(spec.label)}
+                    {/* شبكة المواصفات والسمات الأساسية */}
+                    {validKeySpecs.length > 0 && (activeTab === 'specs' || activeTab === 'all') && (
+                        <div className="space-y-4">
+                            {activeTab === 'all' && product.description && (
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                    <Zap className="w-3.5 h-3.5 text-blue-600" />
+                                    <span>المواصفات والسمات التقنية الأساسية</span>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    {/* عنوان الخاصية: بخط هافت قليلاً ومناسب */}
-                                    <span className="text-xs font-semibold text-gray-400 block mb-1 truncate">
-                                        {spec.label}
-                                    </span>
-                                    {/* السمة / القيمة: بخط بارز ولون مناسب */}
-                                    <span className="text-sm sm:text-base font-black text-gray-900 group-hover:text-blue-700 transition-colors block break-words leading-snug">
-                                        {spec.value}
-                                    </span>
-                                </div>
+                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
+                                {validKeySpecs.map((spec, idx) => (
+                                    <div
+                                        key={idx}
+                                        className="group relative flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 hover:bg-blue-50/40 border border-slate-200/70 hover:border-blue-200 transition-all duration-200 shadow-2xs hover:shadow-xs"
+                                    >
+                                        <div className="p-2.5 rounded-xl bg-white text-blue-600 shadow-2xs border border-slate-100 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+                                            {getSpecIcon(spec.label)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            {/* عنوان الخاصية: بخط هافت قليلاً ومناسب */}
+                                            <span className="text-xs font-semibold text-gray-400 block mb-1 truncate">
+                                                {spec.label}
+                                            </span>
+                                            {/* السمة / القيمة: بخط بارز ولون مناسب */}
+                                            <span className="text-sm sm:text-base font-black text-gray-900 group-hover:text-blue-700 transition-colors block break-words leading-snug">
+                                                {spec.value}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    )}
+
+                    {/* فاصل أنيق عند عرض الكل */}
+                    {activeTab === 'all' && validKeySpecs.length > 0 && product.description && (
+                        <div className="border-t border-gray-100 pt-3"></div>
+                    )}
+
+                    {/* التفاصيل والوصف الكامل للمنتج */}
+                    {product.description && (activeTab === 'description' || activeTab === 'all') && (
+                        <div className="space-y-3">
+                            {activeTab === 'all' && validKeySpecs.length > 0 && (
+                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
+                                    <FileText className="w-3.5 h-3.5 text-blue-600" />
+                                    <span>تفاصيل ومواصفات المنتج الكاملة</span>
+                                </div>
+                            )}
+                            <div className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-line bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
+                                {product.description}
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
-            {/* 4. تفاصيل ومواصفات المنتج الكاملة */}
-            {product.description && (
-                <div className="card p-6 sm:p-8 space-y-4">
-                    <h2 className="text-xl font-bold text-gray-900 border-b border-gray-100 pb-3">
-                        تفاصيل ومواصفات المنتج الكاملة
-                    </h2>
-                    <div className="text-gray-600 leading-relaxed text-sm sm:text-base whitespace-pre-line">
-                        {product.description}
-                    </div>
+            {/* إشعار منبثق عند نسخ الرابط */}
+            {showShareToast && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2.5 text-sm font-bold border border-gray-800 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    <Check className="w-4 h-4 text-emerald-400" />
+                    <span>تم نسخ رابط المنتج بنجاح! جاهز للمشاركة</span>
                 </div>
             )}
         </div>
