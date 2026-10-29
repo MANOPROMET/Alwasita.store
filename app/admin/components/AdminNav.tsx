@@ -43,9 +43,17 @@ export default function AdminNav() {
 
   const handleLogout = async () => {
     try {
-      await account.deleteSession('current');
-    } catch (e) {
+      await fetch('/api/admin/auth/logout', { method: 'POST' });
+    } catch {
       // ignore
+    }
+    try {
+      await account.deleteSession('current');
+    } catch {
+      // ignore
+    }
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('wasita_admin_session');
     }
     router.push('/admin/login');
     router.refresh();

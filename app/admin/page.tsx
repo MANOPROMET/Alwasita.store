@@ -38,28 +38,8 @@ interface StatsData {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
-
-  // التحقق من تسجيل الدخول
-  useEffect(() => {
-    account
-      .get()
-      .then(() => {
-        setCheckingAuth(false);
-      })
-      .catch(() => {
-        const isLocalAdmin =
-          typeof window !== 'undefined' &&
-          sessionStorage.getItem('wasita_admin_session') === 'active';
-        if (isLocalAdmin) {
-          setCheckingAuth(false);
-        } else {
-          router.push('/admin/login');
-        }
-      });
-  }, [router]);
 
   // جلب إحصائيات المتجر الحية
   useEffect(() => {
@@ -77,19 +57,8 @@ export default function AdminDashboardPage() {
       }
     }
 
-    if (!checkingAuth) {
-      fetchStats();
-    }
-  }, [checkingAuth]);
-
-  if (checkingAuth) {
-    return (
-      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-10 h-10 text-primary-600 animate-spin" />
-        <p className="text-xs font-bold text-gray-500">جاري التحقق من الصلاحيات...</p>
-      </div>
-    );
-  }
+    fetchStats();
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {
