@@ -248,7 +248,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 export type { StoreSettings };
 
 // دالة جلب إعدادات المتجر
-export async function getStoreSettings(): Promise<StoreSettings | null> {
+export async function getStoreSettings(): Promise<StoreSettings> {
     try {
         const response = await databases.listDocuments(
             DATABASE_ID,
@@ -259,11 +259,27 @@ export async function getStoreSettings(): Promise<StoreSettings | null> {
         if (response?.documents && response.documents.length > 0) {
             return toPlainObject(response.documents[0] as unknown as StoreSettings);
         }
-        return null;
     } catch (error) {
-        console.error('Error fetching store settings:', error);
-        return null;
+        console.warn('Error fetching store settings, using defaults:', error);
     }
+
+    return {
+        storeName: 'متجر الواسطة',
+        storePhone: '967772872245',
+        whatsappNumber: '967771211394',
+        storeEmail: 'support@alwasita.net',
+        storeAddress: 'اليمن - حضرموت / صنعاء / عدن',
+        storeDescription: 'وجهتك الأولى لأحدث الهواتف الذكية والإلكترونيات والملحقات الأصلية بأسعار منافسة وضمان حقيقي.',
+        defaultCurrency: 'SAR',
+        exchangeRate: 1,
+        exchangeRateYer: 412,
+        exchangeRateUsd: 3.82,
+        facebookUrl: '',
+        instagramUrl: '',
+        twitterUrl: '',
+        tiktokUrl: '',
+        telegramUrl: '',
+    };
 }
 // أضف هذه الدالة في lib/appwrite/api.ts
 export async function getLatestProducts(limit = 8): Promise<Product[]> {

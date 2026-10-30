@@ -158,7 +158,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
     const [isAdded, setIsAdded] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [showShareToast, setShowShareToast] = useState(false);
-    const [activeTab, setActiveTab] = useState<'all' | 'specs' | 'description'>('all');
 
     // السعر الحالي بناء على النسخة المحددة أو سعر المنتج الأساسي
     const currentPrice = selectedVariant?.price || product.price || 0;
@@ -732,76 +731,28 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
             </div>
 
-            {/* 3. قسم المواصفات والتفاصيل الكاملة للمنتج (تصميم موحّد وفق أفضل الممارسات) */}
+            {/* 3. قسم المواصفات والتفاصيل الكاملة للمنتج (عرض كامل موحّد لكافة المواصفات والتفاصيل) */}
             {(validKeySpecs.length > 0 || product.description) && (
                 <div className="card p-6 sm:p-8 space-y-6">
-                    {/* شريط رأس القسم مع تبويبات ذكية للتبديل السريع */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-100 pb-5">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-2xs">
-                                <Sparkles className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg sm:text-xl font-black text-gray-900">
-                                    مواصفات وتفاصيل المنتج
-                                </h2>
-                                <p className="text-xs text-gray-400 mt-0.5">
-                                    البيانات التقنية والمعلومات المعتمدة لهذا المنتج
-                                </p>
-                            </div>
+                    {/* شريط رأس القسم */}
+                    <div className="flex items-center gap-3 border-b border-gray-100 pb-5">
+                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-2xs">
+                            <Sparkles className="w-5 h-5" />
                         </div>
-
-                        {/* أزرار التبويبات (تظهر فقط عند توفر المواصفات والوصف معاً لسهولة التنقل) */}
-                        {validKeySpecs.length > 0 && product.description && (
-                            <div className="inline-flex items-center p-1 bg-gray-100/80 rounded-2xl border border-gray-200/60 text-xs font-bold self-start sm:self-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTab('specs')}
-                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
-                                        activeTab === 'specs'
-                                            ? 'bg-white text-blue-600 shadow-xs'
-                                            : 'text-gray-500 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <Zap className="w-3.5 h-3.5" />
-                                    <span>المواصفات الأساسية</span>
-                                    <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-blue-50 text-blue-600 font-extrabold">
-                                        {validKeySpecs.length}
-                                    </span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTab('description')}
-                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer flex items-center gap-1.5 ${
-                                        activeTab === 'description'
-                                            ? 'bg-white text-blue-600 shadow-xs'
-                                            : 'text-gray-500 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <FileText className="w-3.5 h-3.5" />
-                                    <span>الوصف الكامل</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTab('all')}
-                                    className={`px-3.5 py-1.5 rounded-xl transition cursor-pointer ${
-                                        activeTab === 'all'
-                                            ? 'bg-white text-blue-600 shadow-xs'
-                                            : 'text-gray-500 hover:text-gray-900'
-                                    }`}
-                                >
-                                    <span>الكل</span>
-                                </button>
-                            </div>
-                        )}
+                        <div>
+                            <h2 className="text-lg sm:text-xl font-black text-gray-900">
+                                مواصفات وتفاصيل المنتج
+                            </h2>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                                البيانات التقنية والمعلومات المعتمدة لهذا المنتج
+                            </p>
+                        </div>
                     </div>
 
                     {/* شبكة المواصفات والسمات الأساسية */}
-                    {validKeySpecs.length > 0 && (activeTab === 'specs' || activeTab === 'all') && (
+                    {validKeySpecs.length > 0 && (
                         <div className="space-y-4">
-                            {activeTab === 'all' && product.description && (
+                            {product.description && (
                                 <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
                                     <Zap className="w-3.5 h-3.5 text-blue-600" />
                                     <span>المواصفات والسمات التقنية الأساسية</span>
@@ -832,15 +783,15 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                         </div>
                     )}
 
-                    {/* فاصل أنيق عند عرض الكل */}
-                    {activeTab === 'all' && validKeySpecs.length > 0 && product.description && (
+                    {/* فاصل أنيق بين المواصفات والوصف الكامل */}
+                    {validKeySpecs.length > 0 && product.description && (
                         <div className="border-t border-gray-100 pt-3"></div>
                     )}
 
                     {/* التفاصيل والوصف الكامل للمنتج */}
-                    {product.description && (activeTab === 'description' || activeTab === 'all') && (
+                    {product.description && (
                         <div className="space-y-3">
-                            {activeTab === 'all' && validKeySpecs.length > 0 && (
+                            {validKeySpecs.length > 0 && (
                                 <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
                                     <FileText className="w-3.5 h-3.5 text-blue-600" />
                                     <span>تفاصيل ومواصفات المنتج الكاملة</span>

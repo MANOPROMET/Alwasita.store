@@ -23,7 +23,7 @@ export default function Footer() {
 
     useEffect(() => {
         let isMounted = true;
-        fetch('/api/admin/settings')
+        fetch('/api/settings')
             .then((res) => res.json())
             .then((data) => {
                 if (isMounted && data.success && data.settings) {
@@ -44,8 +44,8 @@ export default function Footer() {
     const storeName = settings?.storeName || 'متجر الواسطة';
     const storeDesc = settings?.storeDescription || 'وجهتك الأولى لأحدث الهواتف الذكية والإلكترونيات والملحقات الأصلية بأسعار منافسة وضمان حقيقي.';
     const storePhone = settings?.storePhone || settings?.whatsappNumber || '+967 771 211 394';
-    const storeEmail = settings?.storeEmail || 'support@alwasita.com';
-    const storeAddress = settings?.storeAddress || 'اليمن - صنعاء / عدن';
+    const storeEmail = settings?.storeEmail || 'support@alwasita.net';
+    const storeAddress = settings?.storeAddress || 'اليمن - حضرموت / صنعاء / عدن';
 
     return (
         <footer className="bg-[#121215] text-gray-400 border-t border-gray-800 w-full overflow-hidden">
@@ -211,7 +211,12 @@ export default function Footer() {
                                     <div className="w-8 h-8 rounded-lg bg-gray-800/80 flex items-center justify-center text-[var(--color-primary)] shrink-0">
                                         <MdEmail className="w-4 h-4" />
                                     </div>
-                                    <span className="text-gray-300">{storeEmail}</span>
+                                    <a
+                                        href={`mailto:${storeEmail}`}
+                                        className="text-gray-300 hover:text-white transition break-all"
+                                    >
+                                        {storeEmail}
+                                    </a>
                                 </li>
                             )}
                             {storeAddress && (

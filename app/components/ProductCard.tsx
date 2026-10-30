@@ -1,8 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Eye, Heart } from 'lucide-react';
+import { ShoppingCart, Eye, Heart, Loader2 } from 'lucide-react';
 import { Product } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -12,6 +13,7 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+    const [isImageLoading, setIsImageLoading] = useState(true);
     const { convertPrice } = useCurrency();
     const { isInWishlist, toggleWishlist } = useWishlist();
     const isLiked = isInWishlist(product.$id);
@@ -67,14 +69,28 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </span>
                 )}
 
-                {/* صورة المنتج */}
+                {/* صورة المنتج مع Skeleton Loader حديث وأيقونة جاري التحميل */}
                 <Link href={`/products/${product.$id}`} className="block w-full h-full relative">
+                    {isImageLoading && (
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 animate-pulse">
+                            <div className="w-11 h-11 rounded-2xl bg-white/90 shadow-2xs border border-slate-200/60 flex items-center justify-center">
+                                <Loader2 className="w-5 h-5 animate-spin text-[var(--color-primary)]" />
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-400 mt-2 tracking-wide">
+                                جاري التحميل...
+                            </span>
+                        </div>
+                    )}
                     <Image
                         src={product.mainImageFileId || '/window.svg'}
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
+                        onLoad={() => setIsImageLoading(false)}
+                        onError={() => setIsImageLoading(false)}
+                        className={`object-contain p-4 group-hover:scale-105 transition-all duration-300 ${
+                            isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+                        }`}
                     />
                 </Link>
 

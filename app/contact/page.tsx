@@ -9,7 +9,7 @@ export default function ContactPage() {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
 
   useEffect(() => {
-    fetch('/api/admin/settings')
+    fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.settings) {
@@ -22,7 +22,7 @@ export default function ContactPage() {
   const storeName = settings?.storeName || 'متجر الواسطة';
   const whatsappNumber = settings?.whatsappNumber || '967771211394';
   const phoneNumber = settings?.storePhone || whatsappNumber;
-  const storeEmail = settings?.storeEmail || 'support@alwasita.com';
+  const storeEmail = settings?.storeEmail || 'support@alwasita.net';
   const storeAddress = settings?.storeAddress || 'اليمن - حضرموت / صنعاء / عدن';
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent('مرحباً ' + storeName + '، أرغب بالاستفسار عن...')}`;
 

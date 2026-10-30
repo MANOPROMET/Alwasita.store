@@ -12,6 +12,7 @@ import {
   getBanners,
   getPromoBanner,
   getProducts,
+  getStoreSettings,
 } from '@/lib/appwrite/api';
 import { getProductImageUrl } from '@/lib/appwrite/utils';
 import {
@@ -32,6 +33,7 @@ export default async function HomePage() {
     heroBanners,
     promoBanner,
     allProducts,
+    settings,
   ] = await Promise.all([
     getCategories(),
     getFeaturedProducts(8),
@@ -40,9 +42,10 @@ export default async function HomePage() {
     getBanners('hero'),
     getPromoBanner(),
     getProducts(),
+    getStoreSettings(),
   ]);
 
-  const whatsappPhone = '967771211394';
+  const whatsappPhone = (settings?.whatsappNumber || '967771211394').replace(/[^\d]/g, '');
 
   // تجهيز بيانات البنر الثابت (الترويجي)
   const promoImage = promoBanner?.imageFileId
