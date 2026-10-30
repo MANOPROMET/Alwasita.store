@@ -59,19 +59,19 @@ export async function POST(request: Request) {
         .replace(/[\s_]+/g, '-')
         .replace(/[^\w\u0600-\u06FF-]/g, '') || `product-${productId}`;
 
-    // 1. رفع الصور عبر Server SDK
+    // 1. رفع الصور بالتوازي عبر Server SDK
     const files = formData.getAll('images') as File[];
-    const uploadedFileIds: string[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
-        const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
-        uploadedFileIds.push(uploadedFile.$id);
-      }
-    }
+    const uploadedFileIds = await Promise.all(
+      files.map(async (file, i) => {
+        if (file && typeof file === 'object' && 'arrayBuffer' in file) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
+          const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
+          return uploadedFile.$id;
+        }
+        return null;
+      })
+    ).then((ids) => ids.filter((id): id is string => Boolean(id)));
 
     // 2. إنشاء مستند المنتج الأساسي
     const productPayload: any = {
@@ -99,25 +99,33 @@ export async function POST(request: Request) {
 
     await databases.createDocument(DATABASE_ID, 'products', productId, productPayload);
 
-    // 3. إنشاء الألوان وحفظ خريطة بالـ IDs الخاصة بها
+    // 3. إنشاء الألوان بالتوازي وحفظ خريطة بالـ IDs الخاصة بها
     const colorNameToDocId: Record<string, string> = {};
-    for (let i = 0; i < colors.length; i++) {
-      const cName = colors[i].trim();
-      if (cName) {
-        const colorDoc = await databases.createDocument(DATABASE_ID, 'product_colors', ID.unique(), {
-          products: productId,
-          name: cName,
-          isAvailable: true,
-          sortOrder: i,
-        });
-        colorNameToDocId[cName] = colorDoc.$id;
-      }
+    const validColors = colors
+      .map((c, i) => ({ name: c.trim(), sortOrder: i }))
+      .filter((c) => c.name);
+
+    if (validColors.length > 0) {
+      const createdColors = await Promise.all(
+        validColors.map(({ name: cName, sortOrder }) =>
+          databases.createDocument(DATABASE_ID, 'product_colors', ID.unique(), {
+            products: productId,
+            name: cName,
+            isAvailable: true,
+            sortOrder,
+          })
+        )
+      );
+      createdColors.forEach((doc) => {
+        colorNameToDocId[doc.name] = doc.$id;
+      });
     }
 
-    // 4. إنشاء النسخ
-    for (let i = 0; i < variants.length; i++) {
-      const v = variants[i];
-      if (v.price) {
+    // 4. إنشاء النسخ وسجلات الصور بالتوازي التام
+    const validVariants = (variants || []).filter((v: any) => v && v.price);
+
+    const createVariantsPromise = Promise.all(
+      validVariants.map((v: any, i: number) => {
         const memVal = (v.storage || '').trim();
         const ramVal = (v.ram || '').trim();
         let varName = '';
@@ -132,7 +140,7 @@ export async function POST(request: Request) {
           varName = cleanName && cleanName !== 'افتراضي' ? v.name.trim() : 'نسخة أساسية';
         }
 
-        await databases.createDocument(DATABASE_ID, 'product_variants', ID.unique(), {
+        return databases.createDocument(DATABASE_ID, 'product_variants', ID.unique(), {
           products: productId,
           name: varName,
           memory: memVal,
@@ -141,25 +149,28 @@ export async function POST(request: Request) {
           isAvailable: true,
           sortOrder: i,
         });
-      }
-    }
+      })
+    );
 
-    // 5. إنشاء سجلات الصور مع ربط كل صورة بلونها إن وجد
-    for (let i = 0; i < uploadedFileIds.length; i++) {
-      const assocColorName = imageColors[i];
-      const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
+    const createImagesPromise = Promise.all(
+      uploadedFileIds.map((fileId, i) => {
+        const assocColorName = imageColors[i];
+        const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
 
-      const imgPayload: any = {
-        products: productId,
-        fileId: uploadedFileIds[i],
-        sortOrder: i,
-      };
-      if (assocColorDocId) {
-        imgPayload.color = assocColorDocId;
-      }
+        const imgPayload: any = {
+          products: productId,
+          fileId,
+          sortOrder: i,
+        };
+        if (assocColorDocId) {
+          imgPayload.color = assocColorDocId;
+        }
 
-      await databases.createDocument(DATABASE_ID, 'product_images', ID.unique(), imgPayload);
-    }
+        return databases.createDocument(DATABASE_ID, 'product_images', ID.unique(), imgPayload);
+      })
+    );
+
+    await Promise.all([createVariantsPromise, createImagesPromise]);
 
     return NextResponse.json({ success: true, productId });
   } catch (error: any) {
@@ -234,10 +245,46 @@ export async function PUT(request: Request) {
 
     await databases.updateDocument(DATABASE_ID, 'products', productId, productPayload);
 
-    // 2. تحديث النسخ (حذف القديمة وإعادة إضافة الجديدة إذا تم إرسالها)
+    // 2. تحديث الألوان بالتوازي (إذا تم إرسالها)
+    const colorNameToDocId: Record<string, string> = {};
+    if (colors && colors.length > 0) {
+      const existingColors = await databases.listDocuments(DATABASE_ID, 'product_colors', [
+        Query.equal('products', productId),
+        Query.limit(100),
+      ]);
+      await Promise.all(
+        existingColors.documents.map((c) =>
+          databases.deleteDocument(DATABASE_ID, 'product_colors', c.$id)
+        )
+      );
+
+      const validColors = colors
+        .map((c, i) => ({ name: c.trim(), sortOrder: i }))
+        .filter((c) => c.name);
+
+      if (validColors.length > 0) {
+        const createdColors = await Promise.all(
+          validColors.map(({ name: cName, sortOrder }) =>
+            databases.createDocument(DATABASE_ID, 'product_colors', ID.unique(), {
+              products: productId,
+              name: cName,
+              isAvailable: true,
+              sortOrder,
+            })
+          )
+        );
+        createdColors.forEach((doc) => {
+          colorNameToDocId[doc.name] = doc.$id;
+        });
+      }
+    }
+
+    // 3. تحديث النسخ بالتوازي (إذا تم إرسالها)
+    let variantsPromise = Promise.resolve();
     if (variants && variants.length > 0) {
       const existingVars = await databases.listDocuments(DATABASE_ID, 'product_variants', [
         Query.equal('products', productId),
+        Query.limit(100),
       ]);
       await Promise.all(
         existingVars.documents.map((v) =>
@@ -245,9 +292,9 @@ export async function PUT(request: Request) {
         )
       );
 
-      for (let i = 0; i < variants.length; i++) {
-        const v = variants[i];
-        if (v.price) {
+      const validVariants = variants.filter((v: any) => v && v.price);
+      variantsPromise = Promise.all(
+        validVariants.map((v: any, i: number) => {
           const memVal = (v.storage || '').trim();
           const ramVal = (v.ram || '').trim();
           let varName = '';
@@ -262,7 +309,7 @@ export async function PUT(request: Request) {
             varName = cleanName && cleanName !== 'افتراضي' ? v.name.trim() : 'نسخة أساسية';
           }
 
-          await databases.createDocument(DATABASE_ID, 'product_variants', ID.unique(), {
+          return databases.createDocument(DATABASE_ID, 'product_variants', ID.unique(), {
             products: productId,
             name: varName,
             memory: memVal,
@@ -271,65 +318,51 @@ export async function PUT(request: Request) {
             isAvailable: true,
             sortOrder: i,
           });
-        }
-      }
+        })
+      ).then(() => {});
     }
 
-    // 3. تحديث الألوان
-    const colorNameToDocId: Record<string, string> = {};
-    if (colors && colors.length > 0) {
-      const existingColors = await databases.listDocuments(DATABASE_ID, 'product_colors', [
-        Query.equal('products', productId),
-      ]);
-      await Promise.all(
-        existingColors.documents.map((c) =>
-          databases.deleteDocument(DATABASE_ID, 'product_colors', c.$id)
-        )
-      );
-
-      for (let i = 0; i < colors.length; i++) {
-        const cName = colors[i].trim();
-        if (cName) {
-          const colorDoc = await databases.createDocument(
-            DATABASE_ID,
-            'product_colors',
-            ID.unique(),
-            {
-              products: productId,
-              name: cName,
-              isAvailable: true,
-              sortOrder: i,
-            }
-          );
-          colorNameToDocId[cName] = colorDoc.$id;
-        }
-      }
-    }
-
-    // 4. رفع أي صور جديدة مرفقة
+    // 4. رفع أي صور جديدة مرفقة بالتوازي
     const files = formData.getAll('images') as File[];
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
-        const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
+    const imagesPromise = (async () => {
+      if (files && files.length > 0) {
+        const uploadedImages = await Promise.all(
+          files.map(async (file, i) => {
+            if (file && typeof file === 'object' && 'arrayBuffer' in file) {
+              const buffer = Buffer.from(await file.arrayBuffer());
+              const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
+              const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
+              return { fileId: uploadedFile.$id, index: i };
+            }
+            return null;
+          })
+        );
 
-        const assocColorName = imageColors[i];
-        const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
+        const validUploads = uploadedImages.filter(
+          (item): item is { fileId: string; index: number } => Boolean(item)
+        );
 
-        const imgPayload: any = {
-          products: productId,
-          fileId: uploadedFile.$id,
-          sortOrder: 10 + i,
-        };
-        if (assocColorDocId) {
-          imgPayload.color = assocColorDocId;
-        }
+        await Promise.all(
+          validUploads.map(({ fileId, index }) => {
+            const assocColorName = imageColors[index];
+            const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
 
-        await databases.createDocument(DATABASE_ID, 'product_images', ID.unique(), imgPayload);
+            const imgPayload: any = {
+              products: productId,
+              fileId,
+              sortOrder: 10 + index,
+            };
+            if (assocColorDocId) {
+              imgPayload.color = assocColorDocId;
+            }
+
+            return databases.createDocument(DATABASE_ID, 'product_images', ID.unique(), imgPayload);
+          })
+        );
       }
-    }
+    })();
+
+    await Promise.all([variantsPromise, imagesPromise]);
 
     return NextResponse.json({ success: true, productId });
   } catch (error: any) {

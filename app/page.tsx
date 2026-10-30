@@ -11,9 +11,10 @@ import {
   getDiscountedProducts,
   getBanners,
   getPromoBanner,
-  getProducts,
+  getProductById,
   getStoreSettings,
 } from '@/lib/appwrite/api';
+import { Product } from '@/types';
 import { getProductImageUrl } from '@/lib/appwrite/utils';
 import {
   ShieldCheck,
@@ -32,7 +33,6 @@ export default async function HomePage() {
     discountedProducts,
     heroBanners,
     promoBanner,
-    allProducts,
     settings,
   ] = await Promise.all([
     getCategories(),
@@ -41,9 +41,21 @@ export default async function HomePage() {
     getDiscountedProducts(),
     getBanners('hero'),
     getPromoBanner(),
-    getProducts(),
     getStoreSettings(),
   ]);
+
+  // تجهيز مجموعة المنتجات المتاحة للسلايدر دون الحاجة لجلب كامل قاعدة البيانات
+  const knownProducts = [...latestProducts, ...featuredProducts, ...discountedProducts];
+  const knownIds = new Set(knownProducts.map((p) => p.$id));
+  const missingBannerIds = (heroBanners || [])
+    .filter((b) => b.linkType === 'product' && b.productId && !knownIds.has(b.productId))
+    .map((b) => b.productId as string);
+
+  const extraBannerProducts = missingBannerIds.length > 0
+    ? (await Promise.all(missingBannerIds.map((id) => getProductById(id)))).filter(Boolean) as Product[]
+    : [];
+
+  const sliderProductsPool = [...knownProducts, ...extraBannerProducts];
 
   const whatsappPhone = (settings?.whatsappNumber || '967771211394').replace(/[^\d]/g, '');
 
@@ -68,7 +80,7 @@ export default async function HomePage() {
         <HeroProductSlider
           banners={heroBanners}
           latestProducts={latestProducts}
-          allProducts={allProducts}
+          allProducts={sliderProductsPool}
         />
       </section>
 

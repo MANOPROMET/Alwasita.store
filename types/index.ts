@@ -37,7 +37,8 @@ export interface Brand {
 export interface Color {
     $id: string;
     name: string;
-    hexCode: string;
+    hexCode?: string;
+    sortOrder?: number;
     isAvailable: boolean;
 }
 
