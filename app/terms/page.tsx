@@ -29,12 +29,9 @@ export default async function TermsPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         
-        {/* رأس الصفحة مع شارة الأيقونة */}
+        {/* رأس الصفحة بدون أيقونات وبلون الهوية البصرية */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-100 text-[var(--color-primary)] shadow-sm">
-            <Scale className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             الشروط والأحكام العامة
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">
@@ -45,61 +42,36 @@ export default async function TermsPage() {
         {/* بنود الشروط والأحكام */}
         <div className="space-y-6">
           
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0 font-bold text-sm">
-                1
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">أهلية الاستخدام والتسوق</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">1. أهلية الاستخدام والتسوق</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               باستخدامك لموقع {storeName}، فإنك تقر بأنك مؤهل قانونياً لإجراء المعاملات التجارية وتلتزم بتقديم معلومات دقيقة وصحيحة (كالاسم، ورقم الهاتف، وعنوان الشحن) لإتمام الطلبات بنجاح.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0 font-bold text-sm">
-                2
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">الأسعار والعملات وتحويل الصرف</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">2. الأسعار والعملات وتحويل الصرف</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               جميع الأسعار المعروضة في المتجر مسجلة بالعملة الأساسية (الريال السعودي SAR)، ويتم احتساب وتحويل الأسعار بالريال اليمني أو الدولار الأمريكي تلقائياً بناءً على أسعار الصرف اليومية المحدثة والمعتمدة من قبل إدارة المتجر.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0 font-bold text-sm">
-                3
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">تأكيد الطلبات وإجراءات الدفع</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">3. تأكيد الطلبات وإجراءات الدفع</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يعد الطلب المرسل عبر السلة أو الواتساب بمثابة طلب حجز مبدئي (قيد الانتظار)، ولا يصبح الطلب سارياً ونهائياً إلا بعد مراجعة المخزون وتأكيده من قبل فريق خدمة العملاء واعتماد التحويل المالي أو آلية الدفع المتفق عليها.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0 font-bold text-sm">
-                4
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">حالة المنتجات وضمانها</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">4. حالة المنتجات وضمانها</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يلتزم {storeName} بتوضيح حالة المنتج بدقة (جديد بالكرتون، أو مستخدم أمريكي / محلي مفحوص). المنتجات الجديدة تخضع لضمان الوكالة، والمنتجات المستخدمة تخضع لفحص تشغيلي يضمن سلامتها وقت التسليم، مع سريان سياسة الإرجاع في حال وجود خلل فني خلال 24 ساعة.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0 font-bold text-sm">
-                5
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">تعديل الشروط والأسعار</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">5. تعديل الشروط والأسعار</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يحق لإدارة المتجر تحديث الأسعار أو العروض أو تعديل هذه الشروط في أي وقت لمواكبة التغيرات في السوق وتكاليف التوريد، وتكون الشروط المحدثة سارية من تاريخ نشرها على الموقع.
             </p>

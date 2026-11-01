@@ -39,7 +39,7 @@ export default function CategoryGrid({ categories }: CategoryGridProps) {
     <section className="space-y-4">
       {/* عنوان مكتوب فيه الأقسام الرئيسية ومعه خط بارز */}
       <div className="border-b border-gray-200/80 pb-3">
-        <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+        <h3 className="text-xl sm:text-2xl font-black text-[var(--color-primary)] tracking-tight">
           الأقسام الرئيسية
         </h3>
       </div>

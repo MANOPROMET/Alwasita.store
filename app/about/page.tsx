@@ -92,7 +92,7 @@ export default async function AboutPage() {
         {/* 4. ركائزنا ومبادئ العمل */}
         <section className="space-y-5">
           <div className="border-b border-gray-200/80 pb-3">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+            <h2 className="text-lg sm:text-xl font-black text-[var(--color-primary)]">
               قيمنا وركائز المتجر
             </h2>
           </div>
@@ -100,44 +100,32 @@ export default async function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             
             {/* الركيزة 1 */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2.5 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center border border-purple-100">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-base">الأصالة والضمان</h3>
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
+              <h3 className="font-black text-[var(--color-primary)] text-base">الأصالة والضمان</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 كافة الأجهزة والملحقات المتوفرة لدينا أصلية ومطابقة لأعلى المواصفات القياسية.
               </p>
             </div>
 
             {/* الركيزة 2 */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2.5 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center border border-purple-100">
-                <BadgePercent className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-base">أفضل الأسعار والعروض</h3>
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
+              <h3 className="font-black text-[var(--color-primary)] text-base">أفضل الأسعار والعروض</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 نسعى دائماً لتقديم عروض مدروسة وأسعار منافسة تناسب مختلف الاحتياجات.
               </p>
             </div>
 
             {/* الركيزة 3 */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2.5 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center border border-purple-100">
-                <Truck className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-base">تغليف وشحن آمن</h3>
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
+              <h3 className="font-black text-[var(--color-primary)] text-base">تغليف وشحن آمن</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 عناية دقيقة بتغليف المنتجات لضمان وصول أجهزتكم بأمان وسرعة تامة.
               </p>
             </div>
 
             {/* الركيزة 4 */}
-            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2.5 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
-              <div className="w-10 h-10 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center border border-purple-100">
-                <Headphones className="w-5 h-5" />
-              </div>
-              <h3 className="font-bold text-gray-900 text-base">خدمة عملاء حقيقية</h3>
+            <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 space-y-2 shadow-2xs hover:border-[var(--color-primary-soft)] transition">
+              <h3 className="font-black text-[var(--color-primary)] text-base">خدمة عملاء حقيقية</h3>
               <p className="text-xs text-gray-500 leading-relaxed">
                 مساعدة ومتابعة مستمرة عبر الواتساب للإجابة على استفساراتكم ومساندتكم.
               </p>

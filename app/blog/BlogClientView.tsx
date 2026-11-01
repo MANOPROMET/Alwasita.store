@@ -170,8 +170,8 @@ export default function BlogClientView({ initialPosts }: BlogClientViewProps) {
         <div className="space-y-6">
           {lines.length > 0 && (
             <div className="p-4 bg-purple-50/50 rounded-2xl border border-purple-100 space-y-2">
-              <span className="text-xs font-black text-[var(--color-primary)] block">
-                ⚡ المواصفات الفنية الرئيسية:
+              <span className="text-xs sm:text-sm font-black text-[var(--color-primary)] block">
+                المواصفات الفنية الرئيسية:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 {lines.map((line, i) => {

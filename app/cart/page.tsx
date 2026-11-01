@@ -150,7 +150,7 @@ export default function CartPage() {
                 {/* رأس صفحة السلة */}
                 <div className="flex items-center justify-between border-b border-gray-200/80 pb-4">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 tracking-tight">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[var(--color-primary)] tracking-tight">
                             سلة المشتريات
                         </h1>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-50 text-[var(--color-primary)] border border-purple-100">
@@ -267,7 +267,7 @@ export default function CartPage() {
                         <div className="bg-white border border-gray-200/80 rounded-3xl p-5 sm:p-6 shadow-2xs space-y-5">
                             
                             <div className="border-b border-gray-100 pb-3">
-                                <h2 className="text-base sm:text-lg font-bold text-gray-900">
+                                <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">
                                     تفاصيل المستلم والطلب
                                 </h2>
                                 <p className="text-xs text-gray-400 mt-0.5">

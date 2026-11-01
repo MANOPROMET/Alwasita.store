@@ -31,12 +31,9 @@ export default async function ShippingPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         
-        {/* رأس الصفحة مع شارة الأيقونة */}
+        {/* رأس الصفحة بدون أيقونات وبلون الهوية البصرية */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-100 text-[var(--color-primary)] shadow-sm">
-            <Truck className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             سياسة الشحن والتوصيل
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">
@@ -58,31 +55,22 @@ export default async function ShippingPage() {
         {/* بنود وبطاقات سياسة الشحن */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
           
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">شحن آمن وتغليف محكم</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">شحن آمن وتغليف محكم</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يتم تغليف الأجهزة والهواتف والملحقات بعناية فائقة باستخدام مواد ماصة للصدمات لضمان حمايتها التامة أثناء النقل حتى استلامها بيدك.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">سرعة المعالجة والشحن</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">سرعة المعالجة والشحن</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               تتم معالجة وتجهيز الطلب خلال 24 ساعة من تأكيده. تستغرق مدة التوصيل من 1 إلى 3 أيام عمل حسب المدينة وموقع الاستلام.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3 md:col-span-2">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">تكلفة الشحن وتفاصيل الدفع</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2 md:col-span-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">تكلفة الشحن وتفاصيل الدفع</h2>
             <div className="space-y-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
               <p>
                 • <strong>كلفة الشحن الأساسية:</strong> يتم الاتفاق عليها مسبقاً وغالباً ما تكون كلفة الشحن والتوصيل على العميل بحسب المحافظة أو شركة النقل المختارة.

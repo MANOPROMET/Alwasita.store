@@ -151,44 +151,24 @@ export default async function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/30">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <h5 className="font-extrabold text-sm text-white">منتجات أصلية 100%</h5>
-                <p className="text-xs text-zinc-300 leading-relaxed">ضمان معتمد على كافة الأجهزة المعروضة</p>
-              </div>
+            <div className="p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition space-y-1.5">
+              <h5 className="font-black text-base text-purple-300">منتجات أصلية 100%</h5>
+              <p className="text-xs text-zinc-300 leading-relaxed">ضمان معتمد على كافة الأجهزة المعروضة</p>
             </div>
 
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/30">
-                <Truck className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <h5 className="font-extrabold text-sm text-white">شحن آمن وسريع</h5>
-                <p className="text-xs text-zinc-300 leading-relaxed">توصيل دقيق لكافة المحافظات والمناطق</p>
-              </div>
+            <div className="p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition space-y-1.5">
+              <h5 className="font-black text-base text-purple-300">شحن آمن وسريع</h5>
+              <p className="text-xs text-zinc-300 leading-relaxed">توصيل دقيق لكافة المحافظات والمناطق</p>
             </div>
 
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/30">
-                <MessageCircle className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <h5 className="font-extrabold text-sm text-white">دعم فوري ومباشر</h5>
-                <p className="text-xs text-zinc-300 leading-relaxed">خدمة عملاء متجاوبة لخدمتك دائماً</p>
-              </div>
+            <div className="p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition space-y-1.5">
+              <h5 className="font-black text-base text-purple-300">دعم فوري ومباشر</h5>
+              <p className="text-xs text-zinc-300 leading-relaxed">خدمة عملاء متجاوبة لخدمتك دائماً</p>
             </div>
 
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 shrink-0 border border-purple-500/30">
-                <Tag className="w-6 h-6" />
-              </div>
-              <div className="space-y-1">
-                <h5 className="font-extrabold text-sm text-white">أسعار منافسة</h5>
-                <p className="text-xs text-zinc-300 leading-relaxed">عروض وتحديثات مستمرة تناسب ميزانيتك</p>
-              </div>
+            <div className="p-5 rounded-2xl bg-zinc-950/70 border border-zinc-800/80 backdrop-blur-md shadow-md hover:border-purple-500/40 transition space-y-1.5">
+              <h5 className="font-black text-base text-purple-300">أسعار منافسة</h5>
+              <p className="text-xs text-zinc-300 leading-relaxed">عروض وتحديثات مستمرة تناسب ميزانيتك</p>
             </div>
           </div>
         </div>

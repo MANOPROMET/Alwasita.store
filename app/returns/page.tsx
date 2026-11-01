@@ -31,12 +31,9 @@ export default async function ReturnsPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         
-        {/* رأس الصفحة مع شارة الأيقونة */}
+        {/* رأس الصفحة بدون أيقونات وبلون الهوية البصرية */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-100 text-amber-700 shadow-sm">
-            <RotateCcw className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             سياسة الإرجاع والاستبدال
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">
@@ -58,41 +55,29 @@ export default async function ReturnsPage() {
         {/* الشروط المحورية للإرجاع */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
           
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">1. الحالات المقبولة للإرجاع</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">1. الحالات المقبولة للإرجاع</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يقبل الإرجاع أو الاستبدال <strong>حصراً في حالة وجود خلل فني أو مصنعي مثبت</strong> في الجهاز أو المنتج، ولا يشمل التراجع عن الشراء أو تغيير الرأي بعد استلام الجهاز سليماً.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-primary-600 flex items-center justify-center">
-              <Clock className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">2. المهلة المحددة للإشعار (24 ساعة)</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">2. المهلة المحددة للإشعار (24 ساعة)</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يجب إشعار المتجر وتقديم بلاغ الخلل الفني خلال <strong>مدة أقصاها يوم واحد فقط (24 ساعة)</strong> من وقت وتاريخ استلام الطلب من شركة النقل أو المندوب.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">3. شروط سلامة الكرتون والملحقات</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">3. شروط سلامة الكرتون والملحقات</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               يشترط أن يكون المنتج بكامل ملحقاته الأصلية وأغلفة الحماية والكرتون دون أي تلف أو تمزيق، وخالياً من أي أثر للخدوش أو السقوط.
             </p>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 text-zinc-700 flex items-center justify-center">
-              <ShieldX className="w-5 h-5" />
-            </div>
-            <h2 className="text-base font-bold text-gray-900">4. استثناءات لا يشملها الإرجاع</h2>
+          <div className="bg-white p-6 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">4. استثناءات لا يشملها الإرجاع</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               الأعطال الناتجة عن سوء الاستخدام، السقوط، تعرض الأجهزة للرطوبة أو السوائل، تذبذب التيار الكهربائي، أو محاولات الصيانة الخارجية تلغي حق الإرجاع تماماً.
             </p>
@@ -102,7 +87,7 @@ export default async function ReturnsPage() {
 
         {/* خطوات تقديم طلب إرجاع */}
         <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-4">
-          <h2 className="text-lg font-black text-gray-900">خطوات تقديم طلب فحص أو إرجاع</h2>
+          <h2 className="text-lg sm:text-xl font-black text-[var(--color-primary)]">خطوات تقديم طلب فحص أو إرجاع</h2>
           <ol className="space-y-3 text-xs sm:text-sm text-gray-600 leading-relaxed list-decimal list-inside">
             <li>قم بتصوير فيديو واضح يوثق الخلل الفني في الجهاز ورقم السيريال (Serial Number).</li>
             <li>تواصل مباشرة مع خدمة العملاء عبر الواتساب مع تزويدنا برقم الطلب وسند الشحن.</li>

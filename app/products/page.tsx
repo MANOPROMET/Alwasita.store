@@ -66,7 +66,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
             <div>
               <div className="flex items-center gap-2.5">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-[var(--color-primary)] tracking-tight">
                   {activeCategoryObj ? activeCategoryObj.name : 'كافة المنتجات'}
                 </h1>
                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] sm:text-xs font-bold bg-purple-50 text-[var(--color-primary)] border border-purple-100">

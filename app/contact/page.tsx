@@ -62,7 +62,7 @@ export default function ContactPage() {
           <span className="inline-block text-xs sm:text-sm font-bold text-[var(--color-primary)] bg-purple-50 px-3 py-1 rounded-full border border-purple-100">
             خدمة عملاء متجر الواسطة
           </span>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             نحن هنا لمساعدتك دائماً
           </h1>
           <p className="text-xs sm:text-sm md:text-base text-gray-500 leading-relaxed font-normal">
@@ -78,17 +78,12 @@ export default function ContactPage() {
             
             {/* بطاقة الواتساب والاتصال الأساسية */}
             <div className="bg-white rounded-3xl border border-gray-200/80 p-6 space-y-5 shadow-2xs">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-100">
-                  <MessageCircle className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-base">واتساب وخدمة العملاء</h3>
-                  <p className="text-xs text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    متاحون للرد السريع
-                  </p>
-                </div>
+              <div>
+                <h3 className="font-black text-[var(--color-primary)] text-lg">واتساب وخدمة العملاء</h3>
+                <p className="text-xs text-emerald-600 font-medium flex items-center gap-1 mt-0.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  متاحون للرد السريع
+                </p>
               </div>
 
               <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 text-center space-y-1">
@@ -166,7 +161,7 @@ export default function ContactPage() {
             <div className="bg-white rounded-3xl border border-gray-200/80 p-6 sm:p-8 space-y-6 shadow-2xs">
               
               <div className="border-b border-gray-100 pb-4">
-                <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                <h2 className="text-lg sm:text-xl font-black text-[var(--color-primary)]">
                   أرسل استفسارك مباشرة
                 </h2>
                 <p className="text-xs sm:text-sm text-gray-500 mt-1">

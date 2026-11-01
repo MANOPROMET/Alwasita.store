@@ -65,11 +65,8 @@ export default async function OffersPage() {
         <section className="space-y-5">
           {/* عنوان السكشن */}
           <div className="flex items-center justify-between border-b border-gray-200/80 pb-3 sm:pb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-50 text-[var(--color-primary)] flex items-center justify-center border border-purple-100">
-                <Tag className="w-4 h-4" />
-              </div>
-              <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+            <div>
+              <h2 className="text-lg sm:text-xl font-black text-[var(--color-primary)] tracking-tight">
                 قائمة العروض المميزة
               </h2>
             </div>

@@ -36,7 +36,7 @@ export default function HomeShowcase({
       {/* رأس القسم: فقط العنوان "المنتجات المميزة" بدون أيقونة وبدون عنوان فرعي */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-4">
         <div>
-          <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+          <h3 className="text-xl sm:text-2xl font-black text-[var(--color-primary)] tracking-tight">
             المنتجات المميزة
           </h3>
         </div>
@@ -52,7 +52,6 @@ export default function HomeShowcase({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
             <span>الأكثر طلباً</span>
             {featuredProducts.length > 0 && (
               <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/10">
@@ -70,7 +69,6 @@ export default function HomeShowcase({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Clock className="w-3.5 h-3.5 text-blue-400" />
             <span>وصل حديثاً</span>
             {latestProducts.length > 0 && (
               <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/10">
@@ -88,7 +86,6 @@ export default function HomeShowcase({
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <Flame className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
             <span>العروض</span>
             {discountedProducts.length > 0 && (
               <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-black/10">

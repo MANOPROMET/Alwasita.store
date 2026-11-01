@@ -30,11 +30,8 @@ export default function WishlistPage() {
         {/* رأس الصفحة مع العداد وزر الإفراغ */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200/80 pb-6">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center shrink-0">
-                <Heart className="w-5 h-5 fill-rose-500" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-gray-900">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-black text-[var(--color-primary)] tracking-tight">
                 قائمة المنتجات المفضلة
               </h1>
             </div>

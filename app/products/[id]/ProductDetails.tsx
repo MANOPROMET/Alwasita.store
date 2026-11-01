@@ -450,8 +450,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                         }}
                                         className={`relative w-16 h-16 rounded-2xl overflow-hidden border-2 bg-white transition cursor-pointer ${
                                             isCurrent
-                                                ? 'border-blue-600 ring-4 ring-blue-50 scale-105 shadow-md'
-                                                : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-blue-300'
+                                                ? 'border-[var(--color-primary)] ring-4 ring-purple-100 scale-105 shadow-md'
+                                                : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-purple-300'
                                         }`}
                                     >
                                         <Image
@@ -521,7 +521,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {/* خيارات السعة التخزينية والرام (تظهر فقط إذا كان الجهاز جوال/لوحي وله أكثر من نسخة ذاكرة > 1) */}
                     {hasStorageVariants && (
                         <div className="space-y-3">
-                            <label className="text-sm font-bold text-gray-800 block">اختر السعة / النسخة:</label>
+                            <label className="text-sm font-extrabold text-[var(--color-primary)] block">اختر السعة / النسخة:</label>
                             <div className="flex flex-wrap gap-2.5">
                                 {storageVariantsList.map((v, idx) => (
                                     <button
@@ -530,7 +530,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                         onClick={() => setSelectedVariant(v)}
                                         className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition cursor-pointer ${
                                             selectedVariant?.name === v.name || selectedVariant?.$id === v.$id
-                                                ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
+                                                ? 'border-[var(--color-primary)] bg-purple-50 text-[var(--color-primary)] shadow-sm'
                                                 : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                                         }`}
                                     >
@@ -544,7 +544,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {/* خيارات المواصفات والأنواع العامة (للملحقات والشواحن إن وجدت خيارات متعددة > 1) */}
                     {hasOtherVariants && (
                         <div className="space-y-3">
-                            <label className="text-sm font-bold text-gray-800 block">اختر المواصفات / النوع:</label>
+                            <label className="text-sm font-extrabold text-[var(--color-primary)] block">اختر المواصفات / النوع:</label>
                             <div className="flex flex-wrap gap-2.5">
                                 {generalVariantsList.map((v, idx) => (
                                     <button
@@ -553,7 +553,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                         onClick={() => setSelectedVariant(v)}
                                         className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition cursor-pointer ${
                                             selectedVariant?.name === v.name || selectedVariant?.$id === v.$id
-                                                ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm'
+                                                ? 'border-[var(--color-primary)] bg-purple-50 text-[var(--color-primary)] shadow-sm'
                                                 : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                                         }`}
                                     >
@@ -567,8 +567,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {/* خيارات الألوان المتاحة (تظهر فقط إذا كانت الألوان متوفرة ومحددة للمنتج) */}
                     {hasColors && (
                         <div className="space-y-3">
-                            <label className="text-sm font-bold text-gray-800 block">
-                                اللون: <span className="text-blue-600 font-extrabold">{selectedColor?.name}</span>
+                            <label className="text-sm font-extrabold text-[var(--color-primary)] block">
+                                اللون: <span className="text-[var(--color-primary-hover)] font-black">{selectedColor?.name}</span>
                             </label>
                             <div className="flex flex-wrap items-center gap-3">
                                 {validColors.map((c, idx) => {
@@ -585,7 +585,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                                                 colorStyle.border ? 'border-gray-300' : 'border-transparent'
                                             } ${
                                                 isSelected
-                                                    ? 'ring-2 ring-blue-600 ring-offset-2 scale-105'
+                                                    ? 'ring-2 ring-[var(--color-primary)] ring-offset-2 scale-105'
                                                     : 'hover:scale-105 opacity-90 hover:opacity-100'
                                             }`}
                                             title={c.name}
@@ -610,7 +610,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* تحديد الكمية */}
                     <div className="flex items-center gap-4 pt-2">
-                        <span className="text-sm font-bold text-gray-800">الكمية:</span>
+                        <span className="text-sm font-extrabold text-[var(--color-primary)]">الكمية:</span>
                         <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white">
                             <button
                                 type="button"
@@ -734,49 +734,38 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             {/* 3. قسم المواصفات والتفاصيل الكاملة للمنتج (عرض كامل موحّد لكافة المواصفات والتفاصيل) */}
             {(validKeySpecs.length > 0 || product.description) && (
                 <div className="card p-6 sm:p-8 space-y-6">
-                    {/* شريط رأس القسم */}
-                    <div className="flex items-center gap-3 border-b border-gray-100 pb-5">
-                        <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60 shadow-2xs">
-                            <Sparkles className="w-5 h-5" />
-                        </div>
-                        <div>
-                            <h2 className="text-lg sm:text-xl font-black text-gray-900">
-                                مواصفات وتفاصيل المنتج
-                            </h2>
-                            <p className="text-xs text-gray-400 mt-0.5">
-                                البيانات التقنية والمعلومات المعتمدة لهذا المنتج
-                            </p>
-                        </div>
+                    {/* شريط رأس القسم نظيف بدون أيقونات وبلون الهوية البصرية */}
+                    <div className="border-b border-gray-100 pb-5">
+                        <h2 className="text-xl sm:text-2xl font-black text-[var(--color-primary)] tracking-tight">
+                            مواصفات وتفاصيل المنتج
+                        </h2>
+                        <p className="text-xs text-gray-400 mt-1">
+                            البيانات التقنية والمعلومات المعتمدة لهذا المنتج
+                        </p>
                     </div>
 
                     {/* شبكة المواصفات والسمات الأساسية */}
                     {validKeySpecs.length > 0 && (
                         <div className="space-y-4">
                             {product.description && (
-                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                    <Zap className="w-3.5 h-3.5 text-blue-600" />
-                                    <span>المواصفات والسمات التقنية الأساسية</span>
+                                <div className="text-sm sm:text-base font-black text-[var(--color-primary)] tracking-wide">
+                                    المواصفات والسمات التقنية الأساسية
                                 </div>
                             )}
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5">
                                 {validKeySpecs.map((spec, idx) => (
                                     <div
                                         key={idx}
-                                        className="group relative flex items-start gap-3.5 p-4 rounded-2xl bg-slate-50/70 hover:bg-blue-50/40 border border-slate-200/70 hover:border-blue-200 transition-all duration-200 shadow-2xs hover:shadow-xs"
+                                        className="group relative flex flex-col justify-center p-4 rounded-2xl bg-purple-50/20 hover:bg-purple-50/50 border border-purple-100/70 hover:border-[var(--color-primary)] transition-all duration-200 shadow-2xs hover:shadow-xs"
                                     >
-                                        <div className="p-2.5 rounded-xl bg-white text-blue-600 shadow-2xs border border-slate-100 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
-                                            {getSpecIcon(spec.label)}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            {/* عنوان الخاصية: بخط هافت قليلاً ومناسب */}
-                                            <span className="text-xs font-semibold text-gray-400 block mb-1 truncate">
-                                                {spec.label}
-                                            </span>
-                                            {/* السمة / القيمة: بخط بارز ولون مناسب */}
-                                            <span className="text-sm sm:text-base font-black text-gray-900 group-hover:text-blue-700 transition-colors block break-words leading-snug">
-                                                {spec.value}
-                                            </span>
-                                        </div>
+                                        {/* عنوان الخاصية بلون الهوية البصرية الأنيق وبدون أيقونة */}
+                                        <span className="text-xs font-bold text-[var(--color-primary)] block mb-1 truncate">
+                                            {spec.label}
+                                        </span>
+                                        {/* السمة / القيمة: بخط بارز وواضح */}
+                                        <span className="text-sm sm:text-base font-black text-gray-900 group-hover:text-[var(--color-primary-hover)] transition-colors block break-words leading-snug">
+                                            {spec.value}
+                                        </span>
                                     </div>
                                 ))}
                             </div>
@@ -792,9 +781,8 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     {product.description && (
                         <div className="space-y-3">
                             {validKeySpecs.length > 0 && (
-                                <div className="flex items-center gap-2 text-xs font-bold text-gray-500">
-                                    <FileText className="w-3.5 h-3.5 text-blue-600" />
-                                    <span>تفاصيل ومواصفات المنتج الكاملة</span>
+                                <div className="text-sm sm:text-base font-black text-[var(--color-primary)] tracking-wide">
+                                    تفاصيل ومواصفات المنتج الكاملة
                                 </div>
                             )}
                             <div className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-line bg-gray-50/50 p-5 rounded-2xl border border-gray-100">

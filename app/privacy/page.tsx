@@ -31,12 +31,9 @@ export default async function PrivacyPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-10">
         
-        {/* رأس الصفحة مع شارة الأيقونة */}
+        {/* رأس الصفحة بدون أيقونات وبلون الهوية البصرية */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-100 text-[var(--color-primary)] shadow-sm">
-            <Lock className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             سياسة الخصوصية وحماية البيانات
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">
@@ -47,49 +44,29 @@ export default async function PrivacyPage() {
         {/* أقسام سياسة الخصوصية */}
         <div className="space-y-6">
           
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[var(--color-primary)] flex items-center justify-center shrink-0">
-                <UserCheck className="w-5 h-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">1. البيانات التي نجمعها</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">1. البيانات التي نجمعها</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               عند استخدامك لـ {storeName} أو تقديم طلب شراء، نجمع فقط المعلومات الضرورية لمعالجة طلبك وإيصاله، وتشمل: الاسم، رقم الهاتف/الواتساب، العنوان أو المدينة للتوصيل، وأي ملاحظات خاصة بالطلب.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">2. كيفية استخدام بياناتك</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">2. كيفية استخدام بياناتك</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               تُستخدم بياناتك حصراً للأغراض التالية: تأكيد طلبات الشراء، تزويدك بسندات الشحن وفواتير الدفع، إرسال تحديثات حالة الشحنة عبر الواتساب أو الرسائل، وتقديم الدعم الفني وخدمات ما بعد البيع.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                <EyeOff className="w-5 h-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">3. عدم مشاركة البيانات مع أي طرف ثالث</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">3. عدم مشاركة البيانات مع أي طرف ثالث</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               نحن لا نبيع أو نؤجر أو نشارك معلومات عملائنا الشخصية مع أي شركات تسويق خارجية. تُشارك البيانات الأساسية (مثل الاسم ورقم الهاتف والعنوان) فقط مع شركات الشحن والتوصيل المعتمدة لإتمام تسليم شحنتك.
             </p>
           </div>
 
-          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
-                <Lock className="w-5 h-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-bold text-gray-900">4. أمن البيانات وحمايتها</h2>
-            </div>
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-2">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">4. أمن البيانات وحمايتها</h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
               تُخزن بياناتك على خوادم آمنة ومشفرة، وتخضع لبروتوكولات حماية تمنع الوصول غير المصرح به أو التعديل أو التسريب.
             </p>

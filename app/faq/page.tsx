@@ -114,12 +114,9 @@ export default function FaqPage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
         
-        {/* رأس الصفحة مع شارة الأيقونة */}
+        {/* رأس الصفحة بدون أيقونات وبلون الهوية البصرية */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-purple-100 text-[var(--color-primary)] shadow-sm">
-            <HelpCircle className="w-7 h-7" />
-          </div>
-          <h1 className="text-2xl sm:text-4xl font-black text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-black text-[var(--color-primary)] tracking-tight">
             الأسئلة الشائعة وإرشادات التسوق
           </h1>
           <p className="text-xs sm:text-sm text-gray-500 max-w-lg mx-auto">
