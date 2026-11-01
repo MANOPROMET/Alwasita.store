@@ -3,6 +3,7 @@ import { databases, storage } from '@/lib/appwrite/server';
 import { ID, Query } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { getProducts } from '@/lib/appwrite/api';
+import { optimizeImage } from '@/lib/imageOptimizer';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
 const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID || 'products';
@@ -59,13 +60,19 @@ export async function POST(request: Request) {
         .replace(/[\s_]+/g, '-')
         .replace(/[^\w\u0600-\u06FF-]/g, '') || `product-${productId}`;
 
-    // 1. رفع الصور بالتوازي عبر Server SDK
+    // 1. ضغط ورفع صور المنتج بالتوازي عبر Server SDK
     const files = formData.getAll('images') as File[];
     const uploadedFileIds = await Promise.all(
       files.map(async (file, i) => {
         if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-          const buffer = Buffer.from(await file.arrayBuffer());
-          const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
+          const rawBuffer = Buffer.from(await file.arrayBuffer());
+          const optimized = await optimizeImage(rawBuffer, file.name || `image-${i}.jpg`, {
+            maxWidth: 1200,
+            maxHeight: 1200,
+            quality: 80,
+            format: 'webp',
+          });
+          const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
           const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
           return uploadedFile.$id;
         }
@@ -322,15 +329,21 @@ export async function PUT(request: Request) {
       ).then(() => {});
     }
 
-    // 4. رفع أي صور جديدة مرفقة بالتوازي
+    // 4. ضغط ورفع أي صور جديدة مرفقة بالتوازي
     const files = formData.getAll('images') as File[];
     const imagesPromise = (async () => {
       if (files && files.length > 0) {
         const uploadedImages = await Promise.all(
           files.map(async (file, i) => {
             if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-              const buffer = Buffer.from(await file.arrayBuffer());
-              const inputFile = InputFile.fromBuffer(buffer, file.name || `image-${i}.jpg`);
+              const rawBuffer = Buffer.from(await file.arrayBuffer());
+              const optimized = await optimizeImage(rawBuffer, file.name || `image-${i}.jpg`, {
+                maxWidth: 1200,
+                maxHeight: 1200,
+                quality: 80,
+                format: 'webp',
+              });
+              const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
               const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
               return { fileId: uploadedFile.$id, index: i };
             }

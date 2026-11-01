@@ -3,6 +3,7 @@ import { databases, storage } from '@/lib/appwrite/server';
 import { ID, Query } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
 import { getBlogPosts } from '@/lib/appwrite/api';
+import { optimizeImage } from '@/lib/imageOptimizer';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
 const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID || 'products';
@@ -50,11 +51,17 @@ export async function POST(request: Request) {
 
     let imageUrl = (formData.get('imageUrl') as string) || '';
 
-    // رفع صورة الغلاف إن وُجدت
+    // ضغط ورفع صورة الغلاف إن وُجدت
     const file = formData.get('image') as File | null;
     if (file && typeof file === 'object' && 'arrayBuffer' in file && file.size > 0) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const inputFile = InputFile.fromBuffer(buffer, file.name || `blog-${postId}.jpg`);
+      const rawBuffer = Buffer.from(await file.arrayBuffer());
+      const optimized = await optimizeImage(rawBuffer, file.name || `blog-${postId}.jpg`, {
+        maxWidth: 1200,
+        maxHeight: 800,
+        quality: 80,
+        format: 'webp',
+      });
+      const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
       const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
       imageUrl = uploadedFile.$id;
     }
@@ -138,11 +145,17 @@ export async function PUT(request: Request) {
 
     let imageUrl = (formData.get('imageUrl') as string) || '';
 
-    // رفع صورة جديدة إذا تم اختيارها
+    // ضغط ورفع صورة جديدة إذا تم اختيارها
     const file = formData.get('image') as File | null;
     if (file && typeof file === 'object' && 'arrayBuffer' in file && file.size > 0) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const inputFile = InputFile.fromBuffer(buffer, file.name || `blog-${id}.jpg`);
+      const rawBuffer = Buffer.from(await file.arrayBuffer());
+      const optimized = await optimizeImage(rawBuffer, file.name || `blog-${id}.jpg`, {
+        maxWidth: 1200,
+        maxHeight: 800,
+        quality: 80,
+        format: 'webp',
+      });
+      const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
       const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
       payload.image = uploadedFile.$id;
     } else if (imageUrl.trim()) {

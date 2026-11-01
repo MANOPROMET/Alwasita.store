@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { databases, storage } from '@/lib/appwrite/server';
 import { ID, Query } from 'node-appwrite';
 import { InputFile } from 'node-appwrite/file';
+import { optimizeImage } from '@/lib/imageOptimizer';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
 const BUCKET_ID = process.env.NEXT_PUBLIC_APPWRITE_BUCKET_ID || 'products';
@@ -51,10 +52,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'عنوان البنر مطلوب' }, { status: 400 });
     }
 
-    // إذا تم رفع ملف صورة جديدة
+    // إذا تم رفع ملف صورة جديدة، نقوم بضغطها وتعديل مقاساتها بذكاء
     if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const inputFile = InputFile.fromBuffer(buffer, file.name || 'banner.jpg');
+      const rawBuffer = Buffer.from(await file.arrayBuffer());
+      const optimized = await optimizeImage(rawBuffer, file.name || 'banner.jpg', {
+        maxWidth: 1920,
+        maxHeight: 1080,
+        quality: 82,
+        format: 'webp',
+      });
+      const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
       const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
       imageFileId = uploadedFile.$id;
     }
@@ -118,11 +125,17 @@ export async function PUT(request: Request) {
       if (formData.has('sortOrder')) payload.sortOrder = Number(formData.get('sortOrder'));
       if (formData.has('isActive')) payload.isActive = formData.get('isActive') !== 'false';
 
-      // فحص هل رُفعت صورة جديدة
+      // فحص هل رُفعت صورة جديدة وضغطها
       const file = formData.get('image') as File | null;
       if (file && typeof file === 'object' && 'arrayBuffer' in file) {
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const inputFile = InputFile.fromBuffer(buffer, file.name || 'banner.jpg');
+        const rawBuffer = Buffer.from(await file.arrayBuffer());
+        const optimized = await optimizeImage(rawBuffer, file.name || 'banner.jpg', {
+          maxWidth: 1920,
+          maxHeight: 1080,
+          quality: 82,
+          format: 'webp',
+        });
+        const inputFile = InputFile.fromBuffer(optimized.buffer, optimized.fileName);
         const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), inputFile);
         payload.imageFileId = uploadedFile.$id;
       } else if (formData.has('imageFileId') && formData.get('imageFileId')) {
