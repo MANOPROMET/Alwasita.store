@@ -214,10 +214,15 @@ export async function PUT(request: Request) {
     const variantsRaw = (formData.get('variants') as string) || '[]';
     const colorsRaw = (formData.get('colors') as string) || '[]';
     const imageColorsRaw = (formData.get('imageColors') as string) || '[]';
+    const deletedImageIdsRaw = (formData.get('deletedImageIds') as string) || '[]';
+    const existingImagesDataRaw = (formData.get('existingImagesData') as string) || '[]';
 
     const variants = JSON.parse(variantsRaw);
     const colors: string[] = JSON.parse(colorsRaw);
     const imageColors: string[] = JSON.parse(imageColorsRaw);
+    const deletedImageIds: string[] = JSON.parse(deletedImageIdsRaw);
+    const existingImagesData: Array<{ id: string; colorName?: string; sortOrder?: number }> =
+      JSON.parse(existingImagesDataRaw);
     const keySpecsRaw = formData.get('keySpecs') as string;
 
     if (!name.trim()) {
@@ -254,7 +259,7 @@ export async function PUT(request: Request) {
 
     // 2. تحديث الألوان بالتوازي (إذا تم إرسالها)
     const colorNameToDocId: Record<string, string> = {};
-    if (colors && colors.length > 0) {
+    if (formData.has('colors')) {
       const existingColors = await databases.listDocuments(DATABASE_ID, 'product_colors', [
         Query.equal('products', productId),
         Query.limit(100),
@@ -265,8 +270,8 @@ export async function PUT(request: Request) {
         )
       );
 
-      const validColors = colors
-        .map((c, i) => ({ name: c.trim(), sortOrder: i }))
+      const validColors = (colors || [])
+        .map((c, i) => ({ name: (c || '').trim(), sortOrder: i }))
         .filter((c) => c.name);
 
       if (validColors.length > 0) {
@@ -284,9 +289,62 @@ export async function PUT(request: Request) {
           colorNameToDocId[doc.name] = doc.$id;
         });
       }
+    } else {
+      // في حال لم يتم إرسال مصفوفة ألوان جديدة، نجلب الألوان الحالية لنحافظ على ربط الصور
+      const existingColors = await databases.listDocuments(DATABASE_ID, 'product_colors', [
+        Query.equal('products', productId),
+        Query.limit(100),
+      ]);
+      existingColors.documents.forEach((doc) => {
+        colorNameToDocId[doc.name] = doc.$id;
+      });
     }
 
-    // 3. تحديث النسخ بالتوازي (إذا تم إرسالها)
+    // 3. حذف الصور المحددة للحذف (من التخزين وقاعدة البيانات)
+    if (deletedImageIds && deletedImageIds.length > 0) {
+      await Promise.all(
+        deletedImageIds.map(async (imgDocId) => {
+          try {
+            const imgDoc = await databases.getDocument(DATABASE_ID, 'product_images', imgDocId);
+            if (imgDoc && imgDoc.fileId) {
+              try {
+                await storage.deleteFile(BUCKET_ID, imgDoc.fileId);
+              } catch (storageErr) {
+                console.warn(`Could not delete storage file ${imgDoc.fileId}:`, storageErr);
+              }
+            }
+            await databases.deleteDocument(DATABASE_ID, 'product_images', imgDocId);
+          } catch (docErr) {
+            console.warn(`Could not delete product_images doc ${imgDocId}:`, docErr);
+          }
+        })
+      );
+    }
+
+    // 4. تحديث الصور الحالية (ربط الألوان والترتيب)
+    if (existingImagesData && existingImagesData.length > 0) {
+      const deletedSet = new Set(deletedImageIds);
+      await Promise.all(
+        existingImagesData.map(async (item) => {
+          if (deletedSet.has(item.id)) return;
+          try {
+            const patchPayload: Record<string, any> = {};
+            if (item.sortOrder !== undefined) {
+              patchPayload.sortOrder = item.sortOrder;
+            }
+            const assocColorName = item.colorName?.trim();
+            const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
+            patchPayload.color = assocColorDocId || null;
+
+            await databases.updateDocument(DATABASE_ID, 'product_images', item.id, patchPayload);
+          } catch (updateErr) {
+            console.warn(`Could not update product_images doc ${item.id}:`, updateErr);
+          }
+        })
+      );
+    }
+
+    // 5. تحديث النسخ بالتوازي (إذا تم إرسالها)
     let variantsPromise = Promise.resolve();
     if (variants && variants.length > 0) {
       const existingVars = await databases.listDocuments(DATABASE_ID, 'product_variants', [
@@ -329,10 +387,11 @@ export async function PUT(request: Request) {
       ).then(() => {});
     }
 
-    // 4. ضغط ورفع أي صور جديدة مرفقة بالتوازي
+    // 6. ضغط ورفع أي صور جديدة مرفقة وربط ألوانها بالتوازي
     const files = formData.getAll('images') as File[];
     const imagesPromise = (async () => {
       if (files && files.length > 0) {
+        const baseSortOrder = existingImagesData ? existingImagesData.length : 0;
         const uploadedImages = await Promise.all(
           files.map(async (file, i) => {
             if (file && typeof file === 'object' && 'arrayBuffer' in file) {
@@ -357,13 +416,13 @@ export async function PUT(request: Request) {
 
         await Promise.all(
           validUploads.map(({ fileId, index }) => {
-            const assocColorName = imageColors[index];
+            const assocColorName = imageColors[index]?.trim();
             const assocColorDocId = assocColorName ? colorNameToDocId[assocColorName] : undefined;
 
             const imgPayload: any = {
               products: productId,
               fileId,
-              sortOrder: 10 + index,
+              sortOrder: baseSortOrder + index,
             };
             if (assocColorDocId) {
               imgPayload.color = assocColorDocId;
@@ -439,12 +498,21 @@ export async function DELETE(request: Request) {
       cols.documents.map((c) => databases.deleteDocument(DATABASE_ID, 'product_colors', c.$id))
     );
 
-    // ج) حذف الصور المرتبطة
+    // ج) حذف الصور المرتبطة وملفاتها من التخزين
     const imgs = await databases.listDocuments(DATABASE_ID, 'product_images', [
       Query.equal('products', productId),
     ]);
     await Promise.all(
-      imgs.documents.map((img) => databases.deleteDocument(DATABASE_ID, 'product_images', img.$id))
+      imgs.documents.map(async (img) => {
+        if (img.fileId) {
+          try {
+            await storage.deleteFile(BUCKET_ID, img.fileId);
+          } catch (storageErr) {
+            console.warn(`Could not delete storage file ${img.fileId}:`, storageErr);
+          }
+        }
+        await databases.deleteDocument(DATABASE_ID, 'product_images', img.$id);
+      })
     );
 
     // د) حذف مستند المنتج نفسه
