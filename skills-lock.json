@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "cloudflare-security-audit": {
+      "source": "sickn33/agentic-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/cloudflare-security-audit/SKILL.md",
+      "computedHash": "d1329d52ac02e5cbbfdd7fefbd28e973daa7ea6f1e7748c5a57c52bba154cf17"
+    }
+  }
+}
