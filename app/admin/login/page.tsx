@@ -9,7 +9,15 @@ import Image from 'next/image';
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect') || '/admin';
+  const rawRedirect = searchParams.get('redirect') || '/admin';
+  // التحقق الصارم من مسار التوجيه لمنع ثغرات التوجيه المفتوح (Open Redirect)
+  const redirectPath =
+    rawRedirect.startsWith('/') &&
+    !rawRedirect.startsWith('//') &&
+    !rawRedirect.includes('://') &&
+    !rawRedirect.includes('\\')
+      ? rawRedirect
+      : '/admin';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

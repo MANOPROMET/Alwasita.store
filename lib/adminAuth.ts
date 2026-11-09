@@ -1,12 +1,19 @@
 // lib/adminAuth.ts
-// نظام التحقق وتشفير جلسات لوحة التحكم (متوافق بالكامل مع Edge Runtime و Node.js)
+// نظام التحقق وتشفير جلسات لوحة التحكم (متوافق بالكامل مع Edge Runtime و Node.js ومحصن أمنياً)
 
 export const ADMIN_COOKIE_NAME = 'wasita_admin_session';
 
-const DEFAULT_SECRET =
-  process.env.ADMIN_JWT_SECRET ||
-  process.env.APPWRITE_API_KEY ||
-  'wasita-admin-secret-key-default-2026';
+// استخراج المفتاح السري مع منع استخدام مفاتيح مكشوفة أو افتراضية ضعيفة
+function getSecretKey(): string {
+  const secret = process.env.ADMIN_JWT_SECRET || process.env.APPWRITE_API_KEY;
+  if (!secret) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error('CRITICAL SECURITY ERROR: ADMIN_JWT_SECRET is missing in production environment.');
+    }
+    return 'wasita-local-dev-fallback-key-strictly-for-development-mode-2026';
+  }
+  return secret;
+}
 
 // دالة توليد مفتاح HMAC-SHA256
 async function getCryptoKey(secret: string): Promise<CryptoKey> {
@@ -46,6 +53,23 @@ function base64UrlDecode(str: string): string {
   return dec.decode(bytes);
 }
 
+/**
+ * مقارنة نصوص في وقت ثابت (Constant-Time Comparison) لمنع هجمات التوقيت (Timing Attacks)
+ */
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const aBuf = enc.encode(a);
+  const bBuf = enc.encode(b);
+  if (aBuf.byteLength !== bBuf.byteLength) {
+    return false;
+  }
+  let diff = 0;
+  for (let i = 0; i < aBuf.byteLength; i++) {
+    diff |= aBuf[i] ^ bBuf[i];
+  }
+  return diff === 0;
+}
+
 // 1. إنشاء توكن جلسة المدير الموقّع رقمياً
 export async function createAdminToken(email: string): Promise<string> {
   const header = { alg: 'HS256', typ: 'JWT' };
@@ -60,7 +84,7 @@ export async function createAdminToken(email: string): Promise<string> {
   const payloadEncoded = base64UrlEncode(JSON.stringify(payload));
   const dataToSign = `${headerEncoded}.${payloadEncoded}`;
 
-  const key = await getCryptoKey(DEFAULT_SECRET);
+  const key = await getCryptoKey(getSecretKey());
   const enc = new TextEncoder();
   const signatureBuffer = await crypto.subtle.sign('HMAC', key, enc.encode(dataToSign));
 
@@ -90,7 +114,7 @@ export async function verifyAdminToken(
   const dataToSign = `${headerEncoded}.${payloadEncoded}`;
 
   try {
-    const key = await getCryptoKey(DEFAULT_SECRET);
+    const key = await getCryptoKey(getSecretKey());
     const enc = new TextEncoder();
 
     let sigStr = signatureEncoded.replace(/-/g, '+').replace(/_/g, '/');
@@ -121,11 +145,12 @@ export async function verifyAdminToken(
   }
 }
 
-// 3. التحقق من صلاحية البريد الإلكتروني للمدير
+// 3. التحقق من صلاحية البريد الإلكتروني للمدير وفق القائمة المصرح بها فقط
 export function isAuthorizedAdminEmail(email: string): boolean {
   const normalized = email.toLowerCase().trim();
+  const envEmails = process.env.ADMIN_EMAILS;
   const configuredEmails = (
-    process.env.ADMIN_EMAILS || 'admin@alwasita.net,a6zaza8za@gmail.com,admin@wasita-store.com'
+    envEmails || 'admin@alwasita.net,a6zaza8za@gmail.com,admin@wasita-store.com'
   )
     .split(',')
     .map((e) => e.toLowerCase().trim())
@@ -134,7 +159,7 @@ export function isAuthorizedAdminEmail(email: string): boolean {
   return configuredEmails.includes(normalized);
 }
 
-// 4. مطابقة بيانات الاعتماد (البريد وكلمة المرور)
+// 4. مطابقة بيانات الاعتماد (البريد وكلمة المرور) بحماية ضد هجمات التوقيت
 export async function validateAdminCredentials(
   email: string,
   password: string
@@ -146,21 +171,15 @@ export async function validateAdminCredentials(
     return { success: false, error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور' };
   }
 
-  const adminPassword = (process.env.ADMIN_PASSWORD || 'wasita@admin2026').trim();
-
-  // فحص البريد المصرح به ومطابقة كلمة المرور
-  if (isAuthorizedAdminEmail(trimmedEmail)) {
-    if (trimmedPassword === adminPassword) {
-      return { success: true };
-    }
+  const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+  if (!adminPassword) {
+    console.error('Security alert: ADMIN_PASSWORD is not configured in environment variables.');
+    return { success: false, error: 'تعذر التحقق من تسجيل الدخول. يرجى مراجعة إعدادات الخادم.' };
   }
 
-  // فحص إضافي للحسابات الإدارية الافتراضية
-  if (
-    trimmedEmail === 'admin@wasita-store.com' ||
-    trimmedEmail === 'admin@alwasita.net'
-  ) {
-    if (trimmedPassword === adminPassword) {
+  // فحص البريد المصرح به ومطابقة كلمة المرور بطريقة آمنة
+  if (isAuthorizedAdminEmail(trimmedEmail)) {
+    if (timingSafeEqualStr(trimmedPassword, adminPassword)) {
       return { success: true };
     }
   }
@@ -169,4 +188,24 @@ export async function validateAdminCredentials(
     success: false,
     error: 'بيانات الدخول غير صحيحة، أو ليس لديك صلاحية مدير في لوحة التحكم.',
   };
+}
+
+/**
+ * فحص جلسة المدير داخل مسارات الـ API كطبقة حماية دفاعية ثانية (Defense-in-Depth)
+ */
+export async function requireAdminSession(
+  request: Request
+): Promise<{ authorized: boolean; email?: string; error?: string }> {
+  const cookieHeader = request.headers.get('cookie') || '';
+  const match = cookieHeader.match(new RegExp(`(?:^|; )${ADMIN_COOKIE_NAME}=([^;]*)`));
+  const token = match ? decodeURIComponent(match[1]) : null;
+
+  const auth = await verifyAdminToken(token);
+  if (!auth.valid) {
+    return {
+      authorized: false,
+      error: 'غير مصرح لك بالوصول. يرجى تسجيل الدخول كمدير.',
+    };
+  }
+  return { authorized: true, email: auth.email };
 }
