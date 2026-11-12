@@ -1,7 +1,7 @@
 // app/privacy/page.tsx
 import Link from 'next/link';
 import { getStoreSettings } from '@/lib/appwrite/api';
-import { ShieldCheck, Lock, EyeOff, UserCheck, ChevronLeft, Mail, Phone } from 'lucide-react';
+import { ChevronLeft, Mail, Phone } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -10,7 +10,8 @@ export default async function PrivacyPage() {
   const settings = await getStoreSettings();
 
   const storeName = settings?.storeName || 'متجر الواسطة';
-  const storeEmail = settings?.storeEmail || 'support@alwasita.com';
+  const rawEmail = settings?.storeEmail || 'alwasita.stor@gmail.com';
+  const storeEmail = rawEmail.replace('alwasita.stor@gamil.com', 'alwasita.stor@gmail.com');
   const storePhone = settings?.storePhone || settings?.whatsappNumber || '+967 771 211 394';
 
   return (
@@ -72,6 +73,27 @@ export default async function PrivacyPage() {
             </p>
           </div>
 
+          {/* 5. سياسة خصوصية تطبيق الواسطة المحاسبي وخدمات Google Drive */}
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/80 shadow-xs space-y-3">
+            <h2 className="text-base sm:text-lg font-black text-[var(--color-primary)]">
+              5. سياسة خصوصية تطبيق &quot;الواسطة المحاسبي&quot; (Alwasita.Accounting) وخدمات Google Drive
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
+              عند استخدامك لتطبيق الواسطة المحاسبي (Alwasita.Accounting) واختيارك تفعيل ميزة النسخ الاحتياطي السحابي عبر حسابك في Google:
+            </p>
+            <ul className="space-y-2.5 text-xs sm:text-sm text-gray-600 leading-relaxed list-disc list-inside pr-1">
+              <li>
+                <strong className="font-bold text-gray-800">الصلاحيات المطلوبة:</strong> يطلب التطبيق صلاحية الوصول المحدود (drive.file) لإنشاء مجلد وملفات النسخ الاحتياطية الخاصة بالتطبيق فقط على مساحة Google Drive الشخصية للمستخدم، ولا يطلع التطبيق أو يصل إلى أي ملفات أو مستندات أخرى في حسابك.
+              </li>
+              <li>
+                <strong className="font-bold text-gray-800">استخدام البيانات وتخزينها:</strong> تُستخدم بيانات الدخول إلى Google حصراً لرفع واستعادة قواعد البيانات المحاسبية الخاصة بك وتأمينها من الضياع. لا يتم تخزين بياناتك المحاسبية أو نسخك الاحتياطية على أي خوادم خارجية تابعة لنا؛ بل تبقى مشفرة ومملوكة بالكامل لك داخل حسابك في Google Drive.
+              </li>
+              <li>
+                <strong className="font-bold text-gray-800">الالتزام بسياسة Google:</strong> يلتزم التطبيق التزاماً تاماً بسياسة بيانات مستخدمي خدمات واجهة برمجة تطبيقات Google (Google API Services User Data Policy)، بما في ذلك متطلبات الاستخدام المحدود (Limited Use).
+              </li>
+            </ul>
+          </div>
+
         </div>
 
         {/* معلومات التواصل للاستفسار عن الخصوصية */}
@@ -82,10 +104,13 @@ export default async function PrivacyPage() {
           </p>
           <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-gray-700 pt-1">
             {storeEmail && (
-              <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200">
+              <a
+                href={`mailto:${storeEmail}`}
+                className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 px-3 py-1.5 rounded-xl border border-gray-200 transition text-gray-800"
+              >
                 <Mail className="w-4 h-4 text-primary-600" />
                 <span>{storeEmail}</span>
-              </span>
+              </a>
             )}
             {storePhone && (
               <span className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-200">
