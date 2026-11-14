@@ -150,3 +150,44 @@ export interface BlogPost {
     $createdAt?: string;
     $updatedAt?: string;
 }
+
+export interface BioLink {
+    $id: string;
+    title: string;
+    subtitle?: string;
+    url: string;
+    icon?: string;
+    iconImageFileId?: string;
+    isActive: boolean;
+    isHighlighted?: boolean;
+    sortOrder: number;
+    clicks?: number;
+    $createdAt?: string;
+    $updatedAt?: string;
+}
+
+export interface BioSocialLinks {
+    whatsapp?: string;
+    instagram?: string;
+    facebook?: string;
+    tiktok?: string;
+    telegram?: string;
+    twitter?: string;
+    youtube?: string;
+    phone?: string;
+    email?: string;
+    snapchat?: string;
+}
+
+export interface BioSettings {
+    $id?: string;
+    title: string;
+    bio: string;
+    avatarFileId?: string;
+    theme: string;
+    customBg?: string;
+    buttonStyle?: string;
+    socialLinks?: string | BioSocialLinks;
+    showQrModal: boolean;
+    footerText?: string;
+}

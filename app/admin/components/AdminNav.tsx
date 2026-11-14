@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Bell,
+  Link2,
 } from 'lucide-react';
 
 export default function AdminNav() {
@@ -70,6 +71,7 @@ export default function AdminNav() {
       badge: pendingCount && pendingCount > 0 ? pendingCount : null,
     },
     { href: '/admin/banners', label: 'البنرات الإعلانية', icon: ImageIcon },
+    { href: '/admin/bio-links', label: 'صفحة الروابط (Bio)', icon: Link2 },
     { href: '/admin/settings', label: 'إعدادات المتجر', icon: Settings },
   ];
 
@@ -142,6 +144,16 @@ export default function AdminNav() {
           {/* الإجراءات الجانبية: زيارة المتجر + الخروج */}
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
+              href="/link"
+              target="_blank"
+              className="hidden lg:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-purple-50 hover:bg-purple-100 text-primary-700 border border-purple-200/80 transition"
+              title="معاينة صفحة الروابط التجميعية"
+            >
+              <span>صفحة /link</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+
+            <Link
               href="/"
               target="_blank"
               className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-gray-100 hover:bg-gray-200/80 text-gray-700 transition"
@@ -203,7 +215,17 @@ export default function AdminNav() {
             );
           })}
 
-          <div className="pt-2 border-t border-gray-100 mt-2">
+          <div className="pt-2 border-t border-gray-100 mt-2 space-y-1">
+            <Link
+              href="/link"
+              target="_blank"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-primary-700 bg-purple-50 hover:bg-purple-100 transition"
+            >
+              <span>معاينة صفحة الروابط (/link)</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+
             <Link
               href="/"
               target="_blank"

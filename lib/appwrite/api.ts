@@ -1,7 +1,7 @@
 // lib/appwrite/api.ts
 import { databases } from './server';
 import { Query } from 'node-appwrite';
-import { Banner, Category, Product, Variant, Color, ProductImage, StoreSettings, BlogPost } from '@/types';
+import { Banner, Category, Product, Variant, Color, ProductImage, StoreSettings, BlogPost, BioSettings, BioLink } from '@/types';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
 
@@ -556,5 +556,67 @@ export async function getBlogPostBySlug(slugOrId: string): Promise<BlogPost | nu
   } catch (error) {
     console.error('Error fetching blog post:', error);
     return null;
+  }
+}
+
+// 12. جلب إعدادات وروابط صفحة البايو التجميعية (/link)
+export async function getBioSettings(): Promise<BioSettings> {
+  try {
+    const res = await databases.listDocuments(DATABASE_ID, 'bio_settings', [Query.limit(1)]);
+    if (res.documents.length > 0) {
+      const doc = res.documents[0] as any;
+      let parsedSocial: any = {};
+      if (doc.socialLinks) {
+        try {
+          parsedSocial = typeof doc.socialLinks === 'string' ? JSON.parse(doc.socialLinks) : doc.socialLinks;
+        } catch {
+          parsedSocial = {};
+        }
+      }
+      return toPlainObject({
+        $id: doc.$id,
+        title: doc.title || 'متجر الواسطة',
+        bio: doc.bio || 'وجهتك الأولى لأحدث الهواتف الذكية والإلكترونيات والملحقات الأصلية ⚡',
+        avatarFileId: doc.avatarFileId || undefined,
+        theme: doc.theme || 'beacons-dark',
+        customBg: doc.customBg || undefined,
+        buttonStyle: doc.buttonStyle || 'glass-dark',
+        socialLinks: parsedSocial,
+        showQrModal: doc.showQrModal !== false,
+        footerText: doc.footerText || 'متجر الواسطة © جميع الحقوق محفوظة',
+      });
+    }
+  } catch (err) {
+    console.error('Error fetching bio settings:', err);
+  }
+
+  return {
+    title: 'متجر الواسطة',
+    bio: 'وجهتك الأولى لأحدث الهواتف الذكية والإلكترونيات والملحقات الأصلية ⚡',
+    theme: 'beacons-dark',
+    buttonStyle: 'glass-dark',
+    socialLinks: {
+      whatsapp: '967771211394',
+      instagram: 'https://www.instagram.com/alwasita.store/',
+      facebook: 'https://www.facebook.com/alwasita.store/',
+      phone: '+967 772 872 245',
+      email: 'alwasita.stor@gmail.com',
+    },
+    showQrModal: true,
+    footerText: 'متجر الواسطة © جميع الحقوق محفوظة',
+  };
+}
+
+export async function getBioLinks(includeInactive = false): Promise<BioLink[]> {
+  try {
+    const queries = [Query.orderAsc('sortOrder')];
+    if (!includeInactive) {
+      queries.push(Query.equal('isActive', true));
+    }
+    const res = await databases.listDocuments(DATABASE_ID, 'bio_links', queries);
+    return toPlainObject((res.documents || []) as unknown as BioLink[]);
+  } catch (err) {
+    console.error('Error fetching bio links:', err);
+    return [];
   }
 }
