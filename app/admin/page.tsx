@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Store,
   ChevronLeft,
-  BookOpen,
+  KeyRound,
 } from 'lucide-react';
 
 interface StatsData {
@@ -38,8 +38,28 @@ interface StatsData {
 
 export default function AdminDashboardPage() {
   const router = useRouter();
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [stats, setStats] = useState<StatsData | null>(null);
   const [loadingStats, setLoadingStats] = useState(true);
+
+  // التحقق من تسجيل الدخول
+  useEffect(() => {
+    account
+      .get()
+      .then(() => {
+        setCheckingAuth(false);
+      })
+      .catch(() => {
+        const isLocalAdmin =
+          typeof window !== 'undefined' &&
+          sessionStorage.getItem('wasita_admin_session') === 'active';
+        if (isLocalAdmin) {
+          setCheckingAuth(false);
+        } else {
+          router.push('/admin/login');
+        }
+      });
+  }, [router]);
 
   // جلب إحصائيات المتجر الحية
   useEffect(() => {
@@ -57,8 +77,19 @@ export default function AdminDashboardPage() {
       }
     }
 
-    fetchStats();
-  }, []);
+    if (!checkingAuth) {
+      fetchStats();
+    }
+  }, [checkingAuth]);
+
+  if (checkingAuth) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
+        <Loader2 className="w-10 h-10 text-primary-600 animate-spin" />
+        <p className="text-xs font-bold text-gray-500">جاري التحقق من الصلاحيات...</p>
+      </div>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -108,7 +139,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      
+
       {/* ترويسة الترحيب والشريط السريع */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 sm:p-8 rounded-3xl border border-gray-200/70 shadow-xs">
         <div className="space-y-1.5">
@@ -144,7 +175,7 @@ export default function AdminDashboardPage() {
 
       {/* بطاقات الإحصائيات الحية */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-        
+
         {/* إجمالي المنتجات */}
         <Link
           href="/admin/products"
@@ -330,9 +361,9 @@ export default function AdminDashboardPage() {
       {/* شبكة الأقسام السريعة */}
       <div className="space-y-4">
         <h2 className="text-lg font-black text-gray-900">أقسام لوحة التحكم</h2>
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          
+
           {/* إدارة المنتجات */}
           <Link
             href="/admin/products"
@@ -423,20 +454,25 @@ export default function AdminDashboardPage() {
             </div>
           </Link>
 
-          {/* المدونة والمقالات */}
+          {/* تراخيص تطبيق الواسطة المحاسبي */}
           <Link
-            href="/admin/blog"
-            className="bg-white p-6 rounded-3xl border border-gray-200/80 hover:border-primary-500 hover:shadow-md transition space-y-4 group"
+            href="/admin/license"
+            className="bg-white p-6 rounded-3xl border border-gray-200/80 hover:border-amber-500 hover:shadow-md transition space-y-4 group"
           >
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
-              <BookOpen className="w-6 h-6" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-white transition">
+              <KeyRound className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition">
-                إدارة المدونة والمقالات
-              </h3>
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-base font-bold text-gray-900 group-hover:text-amber-600 transition">
+                  تراخيص التطبيق المحاسبي
+                </h3>
+                <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800">
+                  أوفلاين
+                </span>
+              </div>
               <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-                إضافة ونشر المقالات التقنية، إرشادات فحص الأجهزة، وتثقيف عملاء المتجر.
+                توليد مفاتيح وأكواد تفعيل تطبيق الأندرويد المحاسبي للعملاء عبر Machine ID بنقرة واحدة.
               </p>
             </div>
           </Link>

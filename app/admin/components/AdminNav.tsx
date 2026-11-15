@@ -18,6 +18,7 @@ import {
   X,
   Bell,
   Link2,
+  KeyRound,
 } from 'lucide-react';
 
 export default function AdminNav() {
@@ -72,6 +73,7 @@ export default function AdminNav() {
     },
     { href: '/admin/banners', label: 'البنرات الإعلانية', icon: ImageIcon },
     { href: '/admin/bio-links', label: 'صفحة الروابط (Bio)', icon: Link2 },
+    { href: '/admin/license', label: 'تراخيص التطبيق', icon: KeyRound },
     { href: '/admin/settings', label: 'إعدادات المتجر', icon: Settings },
   ];
 
