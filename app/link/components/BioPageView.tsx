@@ -10,10 +10,7 @@ import BioLinkCard from './BioLinkCard';
 import BioQrModal from './BioQrModal';
 import {
   QrCode,
-  Share2,
   CheckCircle2,
-  Check,
-  ShoppingBag,
   ExternalLink,
 } from 'lucide-react';
 import {
@@ -41,7 +38,6 @@ export default function BioPageView({
   const [settings] = useState<BioSettings>(initialSettings);
   const [links] = useState<BioLink[]>(initialLinks);
   const [qrOpen, setQrOpen] = useState(false);
-  const [copiedShare, setCopiedShare] = useState(false);
   const [currentUrl, setCurrentUrl] = useState('');
 
   useEffect(() => {
@@ -99,77 +95,31 @@ export default function BioPageView({
       bgClass = 'bg-gradient-to-b from-[#09090b] via-[#121217] to-[#09090b]';
   }
 
-  const handleCopyUrl = async () => {
-    try {
-      await navigator.clipboard.writeText(currentUrl || window.location.href);
-      setCopiedShare(true);
-      setTimeout(() => setCopiedShare(false), 2500);
-    } catch {}
-  };
-
-  const handleShareClick = async () => {
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      try {
-        await navigator.share({
-          title: settings.title,
-          text: settings.bio,
-          url: currentUrl || 'https://alwasitastore.com/link',
-        });
-      } catch {
-        // user cancelled
-      }
-    } else {
-      handleCopyUrl();
-    }
-  };
-
   return (
     <div
       className={`min-h-screen text-white relative flex flex-col justify-between selection:bg-purple-600 selection:text-white ${bgClass}`}
       style={customStyle}
     >
-      {/* عناصر توهج جمالية ناعمة بالخلفية */}
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-purple-600/10 blur-[120px] pointer-events-none rounded-full" />
-      <div className="fixed bottom-0 right-1/4 w-[350px] h-[300px] bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full" />
+      {/* عناصر توهج جمالية ناعمة بالخلفية بدون أي أزرار أو عناصر عائمة */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[350px] bg-purple-600/10 blur-[120px] pointer-events-none rounded-full overflow-hidden" />
+      <div className="absolute bottom-0 right-1/4 w-[350px] h-[300px] bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full overflow-hidden" />
 
-      {/* المحتوى الرئيسي المتمركز في المنتصف كما في Beacons القياسي */}
+      {/* المحتوى الرئيسي المتمركز في المنتصف */}
       <main className="relative z-10 w-full max-w-lg mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 flex-1 flex flex-col">
         
-        {/* شريط الإجراءات العلوي */}
-        <div className="flex items-center justify-between pb-6">
-          {/* زر الباركود */}
-          {settings.showQrModal && (
+        {/* شريط الإجراءات العلوي: يظهر فقط زر رمز QR إذا كان مفعلاً */}
+        {settings.showQrModal && (
+          <div className="flex items-center justify-start pb-6">
             <button
               onClick={() => setQrOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/10 hover:bg-white/15 text-zinc-200 border border-white/10 backdrop-blur-md transition cursor-pointer hover:scale-105 active:scale-95 shadow-xs"
-              title="عرض وتنزيل رمز QR للمتجر"
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold bg-white/10 hover:bg-white/15 text-zinc-200 border border-white/10 backdrop-blur-md transition cursor-pointer hover:scale-105 active:scale-95 shadow-xs"
+              title="عرض رمز QR الخاص بالمتجر"
             >
-              <QrCode className="w-3.5 h-3.5 text-purple-400" />
+              <QrCode className="w-3.5 h-3.5 text-primary-400" />
               <span>رمز QR</span>
             </button>
-          )}
-
-          <div className="flex-1" />
-
-          {/* زر المشاركة */}
-          <button
-            onClick={handleShareClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-white/10 hover:bg-white/15 text-zinc-200 border border-white/10 backdrop-blur-md transition cursor-pointer hover:scale-105 active:scale-95 shadow-xs"
-            title="مشاركة الصفحة"
-          >
-            {copiedShare ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-emerald-400 font-bold">تم النسخ!</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-zinc-300" />
-                <span>مشاركة</span>
-              </>
-            )}
-          </button>
-        </div>
+          </div>
+        )}
 
         {/* 1. قسم الشعار والنبذة التعريفية */}
         <div className="text-center space-y-4 pt-2 pb-6">
@@ -342,14 +292,16 @@ export default function BioPageView({
 
       </main>
 
-      {/* نافذة عرض وتنزيل الـ QR Code */}
-      <BioQrModal
-        isOpen={qrOpen}
-        onClose={() => setQrOpen(false)}
-        url={currentUrl || 'https://alwasitastore.com/link'}
-        storeName={settings.title}
-        logoSrc={avatarUrl}
-      />
+      {/* نافذة عرض وتنزيل الـ QR Code - تظهر شرطياً فقط عند فتح النافذة */}
+      {qrOpen && (
+        <BioQrModal
+          isOpen={qrOpen}
+          onClose={() => setQrOpen(false)}
+          url={currentUrl || 'https://alwasitastore.com/link'}
+          storeName={settings.title}
+          logoSrc={avatarUrl}
+        />
+      )}
     </div>
   );
 }

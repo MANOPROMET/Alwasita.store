@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { X, Download, Link2, Check, Share2 } from 'lucide-react';
+import { X, Download, Link2, Check, Share2, CheckCircle2 } from 'lucide-react';
 
 interface BioQrModalProps {
   isOpen: boolean;
@@ -25,8 +25,8 @@ export default function BioQrModal({
   const [downloading, setDownloading] = useState(false);
   const [qrReady, setQrReady] = useState(false);
 
-  // اسم المعرف المطابق لإنستغرام
-  const displayHandle = 'alwasitastore';
+  // إعداد رابط نظيف ومختصر للعرض
+  const displayUrl = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -39,18 +39,18 @@ export default function BioQrModal({
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // 1. توليد كود الـ QR بدقة فائقة ومستوى تصحيح خطأ عالي (H) يسمح بدمج الشعار بنقاء تام
+        // 1. توليد كود الـ QR باللون الأسود الصريح (#000000) والأبيض الناصع (#ffffff) ومستوى تصحيح خطأ عالي (H)
         await QRCode.toCanvas(canvas, url, {
           errorCorrectionLevel: 'H',
           margin: 1,
-          width: 700,
+          width: 800,
           color: {
-            dark: '#18181b',
+            dark: '#000000',
             light: '#ffffff',
           },
         });
 
-        // 2. تحميل ورسم الشعار المربع داخل مساحة بيضاء مفرغة نقية في المنتصف
+        // 2. رسم الشعار داخل إطار أبيض مربع مفرغ تماماً (excavate: true) يحمي نقاط الكود
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
@@ -61,17 +61,17 @@ export default function BioQrModal({
         img.onload = () => {
           if (!isMounted) return;
 
-          const size = canvas.width; // 700
+          const size = canvas.width; // 800
 
-          // حجم الصندوق الأبيض العازل في المنتصف (حوالي 23% من عرض الكود)
-          const boxSize = Math.round(size * 0.23);
+          // حجم الصندوق الأبيض العازل في المنتصف (حوالي 22% من عرض الكود)
+          const boxSize = Math.round(size * 0.22);
           const boxX = Math.round((size - boxSize) / 2);
           const boxY = Math.round((size - boxSize) / 2);
 
-          // أ) رسم مساحة بيضاء مربعة نقية ومفرغة تماماً (Excavate Box)
+          // أ) رسم مساحة بيضاء مربعة نقية ومفرغة بالكامل (excavate box)
           ctx.save();
           ctx.fillStyle = '#ffffff';
-          const cornerRadius = 8;
+          const cornerRadius = 6;
           ctx.beginPath();
           if (typeof ctx.roundRect === 'function') {
             ctx.roundRect(boxX, boxY, boxSize, boxSize, cornerRadius);
@@ -80,19 +80,19 @@ export default function BioQrModal({
           }
           ctx.fill();
 
-          // إطار ناعم يعزل المربع الأبيض عن نقاط الباركود
-          ctx.strokeStyle = '#e4e4e7';
-          ctx.lineWidth = 3;
+          // إطار رمادي دقيق ونظيف
+          ctx.strokeStyle = '#e2e8f0';
+          ctx.lineWidth = 2.5;
           ctx.stroke();
           ctx.restore();
 
-          // ب) مساحة بيضاء مفرغة نقية حول الشعار (Padding)
+          // ب) مساحة بيضاء مفرغة نقية حول الشعار
           const padding = Math.round(boxSize * 0.12);
           const logoAreaSize = boxSize - (padding * 2);
           const logoAreaX = boxX + padding;
           const logoAreaY = boxY + padding;
 
-          // ج) رسم الشعار المربع بنقاء وحفظ أبعاده الأصلية بدون قص دائري
+          // ج) رسم الشعار المربع بأبعاده الأصلية بنقاء تام وبدون أي قص دائري
           const imgW = img.naturalWidth || img.width;
           const imgH = img.naturalHeight || img.height;
           const aspect = imgW / imgH;
@@ -147,47 +147,45 @@ export default function BioQrModal({
     try {
       const printCanvas = document.createElement('canvas');
       const w = 1000;
-      const h = 1200;
+      const h = 1250;
       printCanvas.width = w;
       printCanvas.height = h;
       const ctx = printCanvas.getContext('2d');
 
       if (ctx) {
-        // خلفية بيضاء نقية
+        // خلفية بيضاء ناصعة
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, h);
 
         // إطار ناعم
-        ctx.strokeStyle = '#e4e4e7';
+        ctx.strokeStyle = '#e2e8f0';
         ctx.lineWidth = 4;
         ctx.strokeRect(30, 30, w - 60, h - 60);
 
         // رسم كود الباركود في المنتصف
-        const qrSize = 700;
+        const qrSize = 720;
         const qrX = (w - qrSize) / 2;
         const qrY = 120;
         ctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
 
-        // كتابة المعرف بنفس ألوان إنستغرام
-        const gradient = ctx.createLinearGradient(w / 2 - 200, 0, w / 2 + 200, 0);
-        gradient.addColorStop(0, '#ea335d');
-        gradient.addColorStop(1, '#d62976');
-        ctx.fillStyle = gradient;
-        ctx.font = 'bold 54px monospace';
+        // كتابة اسم المتجر
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 46px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`@${displayHandle}`, w / 2, 920);
+        ctx.fillText(storeName || 'متجر الواسطة', w / 2, 930);
 
-        // كتابة اسم المتجر ورابط الموقع
-        ctx.fillStyle = '#71717a';
-        ctx.font = '28px sans-serif';
-        ctx.fillText(storeName || 'متجر الواسطة', w / 2, 980);
+        // كتابة رابط الصفحة
+        ctx.fillStyle = '#64748b';
+        ctx.font = '28px monospace';
+        ctx.fillText(displayUrl, w / 2, 990);
 
-        ctx.fillStyle = '#a1a1aa';
-        ctx.font = '22px monospace';
-        ctx.fillText('alwasitastore.com/link', w / 2, 1030);
+        // عبارة توجيهية للطباعة
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '22px sans-serif';
+        ctx.fillText('امسح الرمز لزيارة صفحة الروابط وقنوات التواصل', w / 2, 1050);
 
         const link = document.createElement('a');
-        link.download = `alwasita-instagram-qr-${Date.now()}.png`;
+        link.download = `alwasita-qr-${Date.now()}.png`;
         link.href = printCanvas.toDataURL('image/png', 1.0);
         link.click();
       } else {
@@ -237,28 +235,29 @@ export default function BioQrModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#f99f1b] via-[#ea335d] to-[#d62976] transition-opacity duration-200 animate-fadeIn overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity duration-200 animate-fadeIn"
       onClick={onClose}
     >
-      {/* زر إغلاق دائري في الزاوية العلوية */}
+      {/* زر إغلاق في زاوية الشاشة */}
       <button
         onClick={onClose}
-        className="fixed top-4 left-4 sm:top-6 sm:left-6 p-2 text-white/90 hover:text-white bg-black/20 hover:bg-black/30 rounded-full backdrop-blur-md transition cursor-pointer z-50 shadow-md"
+        className="fixed top-4 left-4 sm:top-6 sm:left-6 p-2 text-white/80 hover:text-white bg-black/40 hover:bg-black/60 rounded-full backdrop-blur-md transition cursor-pointer z-50 shadow-md"
         aria-label="إغلاق"
+        type="button"
       >
-        <X className="w-6 h-6" />
+        <X className="w-5 h-5 sm:w-6 sm:h-6" />
       </button>
 
-      {/* الحاوية المركزية التي تجمع الكارتين تماماً مثل إنستغرام وبحجم متزن ومريح */}
+      {/* الحاوية المركزية الثابتة العرض في منتصف الشاشة تماماً */}
       <div
-        className="w-full max-w-[275px] xs:max-w-[290px] sm:max-w-[310px] flex flex-col items-center gap-3.5 my-auto"
+        className="w-full max-w-[320px] flex flex-col items-center gap-3 my-auto pointer-events-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 1. كارت الباركود الأبيض (Top QR Card) */}
-        <div className="w-full bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 shadow-2xl flex flex-col items-center justify-center">
+        {/* 1. بطاقة الباركود باللون الأبيض الناصع وبمقاس ثابت ومناسب للهواتف */}
+        <div className="w-full bg-white rounded-2xl p-6 shadow-2xl border border-zinc-100 flex flex-col items-center text-center">
           
-          {/* حاوية الـ QR Code المتوازنة */}
-          <div className="w-[155px] h-[155px] xs:w-[170px] xs:h-[170px] sm:w-[185px] sm:h-[185px] aspect-square flex items-center justify-center relative my-0.5">
+          {/* حاوية الـ QR Code بمقاس 200x200 بكسل كحد أقصى */}
+          <div className="w-[180px] h-[180px] sm:w-[200px] sm:h-[200px] max-w-[200px] max-h-[200px] aspect-square flex items-center justify-center relative my-1">
             <canvas
               ref={canvasRef}
               className="w-full h-full object-contain block aspect-square"
@@ -270,27 +269,32 @@ export default function BioQrModal({
             )}
           </div>
 
-          {/* المعرف أو اسم المتجر بخط إنستغرام المتدرج تماماً مثل الصورة */}
-          <div className="mt-2.5 text-center">
-            <span className="text-base sm:text-lg font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#ea335d] to-[#d62976] dir-ltr font-mono block">
-              @{displayHandle}
-            </span>
+          {/* اسم المتجر والمعرف بالهوية البصرية الرسمية */}
+          <div className="mt-3 text-center space-y-0.5 w-full">
+            <div className="flex items-center justify-center gap-1.5 text-zinc-900 font-extrabold text-base tracking-tight">
+              <span>{storeName}</span>
+              <CheckCircle2 className="w-4 h-4 text-primary-600 fill-primary-600 stroke-white shrink-0" />
+            </div>
+            <p className="text-zinc-500 font-mono text-xs dir-ltr font-medium truncate">
+              {displayUrl}
+            </p>
           </div>
 
         </div>
 
-        {/* 2. كارت أزرار التحكم السفلي المنفصل تماماً مثل الصورة المرفقة */}
-        <div className="w-full bg-white rounded-2xl sm:rounded-3xl py-3 px-4 sm:py-3.5 sm:px-5 shadow-2xl flex items-center justify-around">
+        {/* 2. بطاقة أزرار التحكم الأفقية المضغوطة أسفل بطاقة الباركود مثل إنستغرام وبألوان الهوية */}
+        <div className="w-full bg-white rounded-2xl p-3 sm:p-3.5 shadow-xl border border-zinc-100 flex items-center justify-around">
           
           {/* زر المشاركة */}
           <button
             onClick={handleShare}
             className="flex flex-col items-center group cursor-pointer"
+            type="button"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
-              <Share2 className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+            <div className="w-11 h-11 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-700 bg-zinc-50 group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:border-primary-200 group-active:scale-95 transition shadow-xs">
+              <Share2 className="w-5 h-5 stroke-[1.75]" />
             </div>
-            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
+            <span className="text-[11px] font-bold text-zinc-700 group-hover:text-primary-600 mt-1.5 transition">
               مشاركة
             </span>
           </button>
@@ -299,30 +303,32 @@ export default function BioQrModal({
           <button
             onClick={handleCopy}
             className="flex flex-col items-center group cursor-pointer"
+            type="button"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
+            <div className="w-11 h-11 rounded-full border border-zinc-200 flex items-center justify-center text-zinc-700 bg-zinc-50 group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:border-primary-200 group-active:scale-95 transition shadow-xs">
               {copied ? (
                 <Check className="w-5 h-5 text-emerald-600 stroke-[2.5]" />
               ) : (
-                <Link2 className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+                <Link2 className="w-5 h-5 stroke-[1.75]" />
               )}
             </div>
-            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
+            <span className="text-[11px] font-bold text-zinc-700 group-hover:text-primary-600 mt-1.5 transition">
               {copied ? 'تم النسخ!' : 'نسخ الرابط'}
             </span>
           </button>
 
-          {/* زر التنزيل */}
+          {/* زر تحميل الرمز */}
           <button
             onClick={handleDownload}
             disabled={!qrReady || downloading}
             className="flex flex-col items-center group cursor-pointer disabled:opacity-50"
+            type="button"
           >
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
-              <Download className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+            <div className="w-11 h-11 rounded-full border border-primary-200 bg-primary-50 text-primary-600 group-hover:bg-primary-600 group-hover:text-white group-hover:border-primary-600 group-active:scale-95 transition shadow-xs">
+              <Download className="w-5 h-5 stroke-[1.75]" />
             </div>
-            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
-              {downloading ? 'جاري التحميل...' : 'تنزيل'}
+            <span className="text-[11px] font-bold text-zinc-700 group-hover:text-primary-600 mt-1.5 transition">
+              {downloading ? 'جاري التحميل...' : 'تحميل الرمز'}
             </span>
           </button>
 
