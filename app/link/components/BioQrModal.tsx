@@ -35,67 +35,30 @@ export default function BioQrModal({
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // 1. توليد كود الـ QR باللون الأسود الصريح (#000000) والأبيض الناصع (#ffffff)
+        // 1. توليد كود الـ QR بأبعاد مضبوطة على 210 بكسل بالضبط لتطابق حجم الحاوية وتمنع أي تمدد
         await QRCode.toCanvas(canvas, url, {
           errorCorrectionLevel: 'H',
           margin: 1,
-          width: 570, // دقة 3x للحفاظ على صفاء الخطوط داخل أبعاد 190px
+          width: 210, // مضبوطة على 210 بالضبط لمنع التمدد الرأسي
           color: {
             dark: '#000000',
             light: '#ffffff',
           },
         });
 
-        // 2. إطار أبيض مربع مفرغ (excavate: true) في المنتصف
+        // 2. تفريغ مربع أبيض نقي في المنتصف (excavate: true) بحجم 48 بكسل لعزل نقاط الباركود
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          const size = canvas.width; // 570
-          // حجم الصندوق المفرغ في المنتصف (متوافق مع أبعاد 44px داخل 190px)
-          const boxSize = Math.round((44 / 190) * size);
-          const boxX = Math.round((size - boxSize) / 2);
-          const boxY = Math.round((size - boxSize) / 2);
+          const boxSize = 48;
+          const boxX = Math.round((210 - boxSize) / 2);
+          const boxY = Math.round((210 - boxSize) / 2);
 
           ctx.fillStyle = '#ffffff';
-          const cornerRadius = 6;
-          ctx.beginPath();
-          if (typeof ctx.roundRect === 'function') {
-            ctx.roundRect(boxX, boxY, boxSize, boxSize, cornerRadius);
-          } else {
-            ctx.rect(boxX, boxY, boxSize, boxSize);
-          }
-          ctx.fill();
+          ctx.fillRect(boxX, boxY, boxSize, boxSize);
+        }
 
-          ctx.strokeStyle = '#e4e4e7';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-
-          // رسم الشعار أيضاً داخل الكانفاس ليظهر بجودة تامة عند تنزيل الصورة
-          const img = new window.Image();
-          img.crossOrigin = 'anonymous';
-          img.src = logoSrc;
-          img.onload = () => {
-            if (!isMounted) return;
-            const pad = Math.round(boxSize * 0.12);
-            const logoW = boxSize - pad * 2;
-            const logoH = boxSize - pad * 2;
-            const aspect = (img.naturalWidth || img.width) / (img.naturalHeight || img.height);
-            let dw = logoW,
-              dh = logoH;
-            let dx = boxX + pad,
-              dy = boxY + pad;
-            if (aspect > 1) {
-              dh = logoW / aspect;
-              dy += (logoH - dh) / 2;
-            } else if (aspect < 1) {
-              dw = logoH * aspect;
-              dx += (logoW - dw) / 2;
-            }
-            ctx.drawImage(img, dx, dy, dw, dh);
-            setQrReady(true);
-          };
-          img.onerror = () => {
-            if (isMounted) setQrReady(true);
-          };
+        if (isMounted) {
+          setQrReady(true);
         }
       } catch (err) {
         console.error('QR generation error:', err);
@@ -113,25 +76,59 @@ export default function BioQrModal({
       isMounted = false;
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, url, logoSrc, onClose]);
+  }, [isOpen, url, onClose]);
 
   if (!isOpen) return null;
 
-  // تنزيل الرمز
+  // تنزيل الرمز بدقة عالية
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     setDownloading(true);
     try {
-      const link = document.createElement('a');
-      link.download = `alwasita-qr-${Date.now()}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
+      const downloadCanvas = document.createElement('canvas');
+      const targetSize = 630;
+      downloadCanvas.width = targetSize;
+      downloadCanvas.height = targetSize;
+      const dCtx = downloadCanvas.getContext('2d');
+
+      if (dCtx) {
+        dCtx.fillStyle = '#ffffff';
+        dCtx.fillRect(0, 0, targetSize, targetSize);
+        dCtx.drawImage(canvas, 0, 0, targetSize, targetSize);
+
+        // إطار الشعار المفرغ
+        const bSize = Math.round((48 / 210) * targetSize);
+        const bX = (targetSize - bSize) / 2;
+        const bY = (targetSize - bSize) / 2;
+        dCtx.fillStyle = '#ffffff';
+        dCtx.fillRect(bX, bY, bSize, bSize);
+
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.src = logoSrc;
+        img.onload = () => {
+          const pad = Math.round(bSize * 0.12);
+          const lSize = bSize - pad * 2;
+          dCtx.drawImage(img, bX + pad, bY + pad, lSize, lSize);
+          const link = document.createElement('a');
+          link.download = `alwasita-qr-${Date.now()}.png`;
+          link.href = downloadCanvas.toDataURL('image/png', 1.0);
+          link.click();
+          setDownloading(false);
+        };
+        img.onerror = () => {
+          const link = document.createElement('a');
+          link.download = `alwasita-qr-${Date.now()}.png`;
+          link.href = downloadCanvas.toDataURL('image/png', 1.0);
+          link.click();
+          setDownloading(false);
+        };
+      }
     } catch (e) {
       console.error('Download error:', e);
-    } finally {
-      setTimeout(() => setDownloading(false), 400);
+      setDownloading(false);
     }
   };
 
@@ -182,18 +179,18 @@ export default function BioQrModal({
             <X className="w-4 h-4" />
           </button>
 
-          {/* في المنتصف مكون الـ QR Code باللون الأسود الصريح وبأبعاد 190px */}
+          {/* حاوية الـ QR Code المربعة تماماً والمحصورة داخل الكارد */}
           <div
-            className="relative flex items-center justify-center"
-            style={{ width: '190px', height: '190px', maxWidth: '100%' }}
+            className="w-[210px] h-[210px] aspect-square flex items-center justify-center overflow-hidden mx-auto relative"
+            style={{ width: '210px', height: '210px', maxWidth: '100%', maxHeight: '100%' }}
           >
             <canvas
               ref={canvasRef}
-              style={{ width: '190px', height: '190px', maxWidth: '100%', display: 'block' }}
-              className="rounded-lg aspect-square"
+              className="w-full h-full object-contain aspect-square block"
+              style={{ width: '210px', height: '210px', display: 'block' }}
             />
 
-            {/* الشعار في المنتصف بحجم 44x44 بكسل داخل مربع أبيض مع excavate: true */}
+            {/* شعار واحد فقط في المنتصف بأبعاد متساوية 44x44 بكسل بدون أي تمطيط أو تكرار */}
             <div
               className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-1 rounded-md shadow-xs flex items-center justify-center pointer-events-none"
               style={{ width: '44px', height: '44px' }}
@@ -201,7 +198,8 @@ export default function BioQrModal({
               <img
                 src={logoSrc}
                 alt="Store Logo"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain aspect-square"
+                style={{ width: '36px', height: '36px' }}
               />
             </div>
           </div>
