@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { X, Download, Copy, Check, Share2, CheckCircle2 } from 'lucide-react';
+import { X, Download, Link2, Check, Share2 } from 'lucide-react';
 
 interface BioQrModalProps {
   isOpen: boolean;
@@ -25,8 +25,8 @@ export default function BioQrModal({
   const [downloading, setDownloading] = useState(false);
   const [qrReady, setQrReady] = useState(false);
 
-  // إعداد رابط نظيف ومختصر للعرض أسفل الباركود
-  const displayUrl = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+  // اسم المعرف المطابق لإنستغرام
+  const displayHandle = 'alwasitastore';
 
   useEffect(() => {
     if (!isOpen) return;
@@ -45,7 +45,7 @@ export default function BioQrModal({
           margin: 1,
           width: 700,
           color: {
-            dark: '#09090b',
+            dark: '#18181b',
             light: '#ffffff',
           },
         });
@@ -63,15 +63,15 @@ export default function BioQrModal({
 
           const size = canvas.width; // 700
 
-          // حجم الصندوق الأبيض العازل في المنتصف (حوالي 22% من عرض الكود)
-          const boxSize = Math.round(size * 0.22);
+          // حجم الصندوق الأبيض العازل في المنتصف (حوالي 23% من عرض الكود)
+          const boxSize = Math.round(size * 0.23);
           const boxX = Math.round((size - boxSize) / 2);
           const boxY = Math.round((size - boxSize) / 2);
 
           // أ) رسم مساحة بيضاء مربعة نقية ومفرغة تماماً (Excavate Box)
           ctx.save();
           ctx.fillStyle = '#ffffff';
-          const cornerRadius = 6;
+          const cornerRadius = 8;
           ctx.beginPath();
           if (typeof ctx.roundRect === 'function') {
             ctx.roundRect(boxX, boxY, boxSize, boxSize, cornerRadius);
@@ -138,63 +138,56 @@ export default function BioQrModal({
 
   if (!isOpen) return null;
 
-  // تنزيل كارت الباركود بصيغة PNG عالية الدقة جاهزة للطباعة بجودة فائقة
+  // تنزيل كارت الباركود عالي الدقة بصيغة PNG جاهزة للطباعة
   const handleDownload = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     setDownloading(true);
     try {
-      // إنشاء كانفاس عالي الدقة للطباعة (1000 × 1280) متطابق مع كارت إنستغرام
       const printCanvas = document.createElement('canvas');
       const w = 1000;
-      const h = 1280;
+      const h = 1200;
       printCanvas.width = w;
       printCanvas.height = h;
       const ctx = printCanvas.getContext('2d');
 
       if (ctx) {
-        // 1. خلفية الكارت الأبيض
+        // خلفية بيضاء نقية
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, w, h);
 
-        // 2. إطار خارجي أنيق
+        // إطار ناعم
         ctx.strokeStyle = '#e4e4e7';
-        ctx.lineWidth = 6;
+        ctx.lineWidth = 4;
         ctx.strokeRect(30, 30, w - 60, h - 60);
 
-        // 3. رسم كود الباركود بدقة عالية
-        const qrSize = 680;
+        // رسم كود الباركود في المنتصف
+        const qrSize = 700;
         const qrX = (w - qrSize) / 2;
-        const qrY = 130;
+        const qrY = 120;
         ctx.drawImage(canvas, qrX, qrY, qrSize, qrSize);
 
-        // 4. خط فاصل ناعم
-        ctx.strokeStyle = '#f4f4f5';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(120, 870);
-        ctx.lineTo(w - 120, 870);
-        ctx.stroke();
-
-        // 5. اسم المتجر
-        ctx.fillStyle = '#09090b';
-        ctx.font = 'bold 46px sans-serif';
+        // كتابة المعرف بنفس ألوان إنستغرام
+        const gradient = ctx.createLinearGradient(w / 2 - 200, 0, w / 2 + 200, 0);
+        gradient.addColorStop(0, '#ea335d');
+        gradient.addColorStop(1, '#d62976');
+        ctx.fillStyle = gradient;
+        ctx.font = 'bold 54px monospace';
         ctx.textAlign = 'center';
-        ctx.fillText(storeName, w / 2, 950);
+        ctx.fillText(`@${displayHandle}`, w / 2, 920);
 
-        // 6. الرابط الرسمي
+        // كتابة اسم المتجر ورابط الموقع
         ctx.fillStyle = '#71717a';
-        ctx.font = '28px monospace';
-        ctx.fillText(displayUrl, w / 2, 1010);
+        ctx.font = '28px sans-serif';
+        ctx.fillText(storeName || 'متجر الواسطة', w / 2, 980);
 
-        // 7. توجيه المسح
         ctx.fillStyle = '#a1a1aa';
-        ctx.font = '22px sans-serif';
-        ctx.fillText('امسح الرمز بكاميرا الهاتف لفتح صفحة الروابط مباشرة', w / 2, 1070);
+        ctx.font = '22px monospace';
+        ctx.fillText('alwasitastore.com/link', w / 2, 1030);
 
         const link = document.createElement('a');
-        link.download = `alwasita-qr-${Date.now()}.png`;
+        link.download = `alwasita-instagram-qr-${Date.now()}.png`;
         link.href = printCanvas.toDataURL('image/png', 1.0);
         link.click();
       } else {
@@ -244,98 +237,93 @@ export default function BioQrModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs transition-opacity duration-200 animate-fadeIn overflow-y-auto"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#f99f1b] via-[#ea335d] to-[#d62976] transition-opacity duration-200 animate-fadeIn overflow-y-auto"
       onClick={onClose}
     >
-      {/* كارت الباركود الأبيض الأنيق والمحدد بحجم متوازن مثل إنستغرام */}
+      {/* زر إغلاق دائري في الزاوية العلوية */}
+      <button
+        onClick={onClose}
+        className="fixed top-4 left-4 sm:top-6 sm:left-6 p-2 text-white/90 hover:text-white bg-black/20 hover:bg-black/30 rounded-full backdrop-blur-md transition cursor-pointer z-50 shadow-md"
+        aria-label="إغلاق"
+      >
+        <X className="w-6 h-6" />
+      </button>
+
+      {/* الحاوية المركزية التي تجمع الكارتين تماماً مثل إنستغرام وبحجم متزن ومريح */}
       <div
-        className="relative w-full max-w-[315px] sm:max-w-[335px] bg-white rounded-[28px] p-5 sm:p-6 shadow-2xl border border-zinc-100 text-center flex flex-col items-center my-auto transition-transform duration-200"
+        className="w-full max-w-[275px] xs:max-w-[290px] sm:max-w-[310px] flex flex-col items-center gap-3.5 my-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* زر الإغلاق داخل زاوية الكارت */}
-        <button
-          onClick={onClose}
-          className="absolute top-3.5 left-3.5 p-1.5 text-zinc-400 hover:text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-full transition cursor-pointer"
-          aria-label="إغلاق"
-        >
-          <X className="w-4 h-4" />
-        </button>
-
-        {/* عنوان خفيف وأنيق أعلى الكارت */}
-        <div className="pt-1 pb-1">
-          <span className="text-[11px] font-bold tracking-wider text-zinc-400">
-            رمز QR المتجر
-          </span>
-        </div>
-
-        {/* حاوية الـ QR Code المتوازنة والمريحة للعين داخل الكارت الأبيض */}
-        <div className="w-[165px] h-[165px] xs:w-[185px] xs:h-[185px] sm:w-[200px] sm:h-[200px] aspect-square flex items-center justify-center relative my-1.5">
-          <canvas
-            ref={canvasRef}
-            className="w-full h-full object-contain block aspect-square"
-          />
-          {!qrReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-white/95 rounded-xl">
-              <span className="text-xs font-bold text-zinc-700 animate-pulse">جاري إنشاء الرمز...</span>
-            </div>
-          )}
-        </div>
-
-        {/* اسم المتجر والمعرف تحت الباركود داخل نفس الكارت الأبيض */}
-        <div className="mt-1 w-full text-center space-y-0.5">
-          <div className="flex items-center justify-center gap-1.5 text-zinc-900 font-extrabold text-base sm:text-lg tracking-tight">
-            <span>{storeName}</span>
-            <CheckCircle2 className="w-4 h-4 text-primary-600 fill-primary-600 stroke-white shrink-0" />
-          </div>
-          <p className="text-zinc-500 font-mono text-[11px] sm:text-xs dir-ltr font-medium truncate">
-            {displayUrl}
-          </p>
-        </div>
-
-        {/* خط فاصل ناعم */}
-        <div className="w-full border-t border-zinc-100 my-3.5" />
-
-        {/* أزرار التحكم الثلاثة الأفقية المنظمة تماماً مثل إنستغرام داخل الكارت */}
-        <div className="w-full grid grid-cols-3 gap-2">
+        {/* 1. كارت الباركود الأبيض (Top QR Card) */}
+        <div className="w-full bg-white rounded-[28px] sm:rounded-[32px] p-5 sm:p-6 shadow-2xl flex flex-col items-center justify-center">
           
-          {/* 1. مشاركة الرابط */}
+          {/* حاوية الـ QR Code المتوازنة */}
+          <div className="w-[155px] h-[155px] xs:w-[170px] xs:h-[170px] sm:w-[185px] sm:h-[185px] aspect-square flex items-center justify-center relative my-0.5">
+            <canvas
+              ref={canvasRef}
+              className="w-full h-full object-contain block aspect-square"
+            />
+            {!qrReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white/95 rounded-xl">
+                <span className="text-xs font-bold text-zinc-700 animate-pulse">جاري إنشاء الرمز...</span>
+              </div>
+            )}
+          </div>
+
+          {/* المعرف أو اسم المتجر بخط إنستغرام المتدرج تماماً مثل الصورة */}
+          <div className="mt-2.5 text-center">
+            <span className="text-base sm:text-lg font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-[#ea335d] to-[#d62976] dir-ltr font-mono block">
+              @{displayHandle}
+            </span>
+          </div>
+
+        </div>
+
+        {/* 2. كارت أزرار التحكم السفلي المنفصل تماماً مثل الصورة المرفقة */}
+        <div className="w-full bg-white rounded-2xl sm:rounded-3xl py-3 px-4 sm:py-3.5 sm:px-5 shadow-2xl flex items-center justify-around">
+          
+          {/* زر المشاركة */}
           <button
             onClick={handleShare}
-            className="py-2.5 px-1 bg-zinc-100 hover:bg-zinc-200 active:scale-95 text-zinc-800 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer"
-            title="مشاركة الرابط"
+            className="flex flex-col items-center group cursor-pointer"
           >
-            <Share2 className="w-4 h-4 text-zinc-700" />
-            <span className="text-[11px] font-bold">مشاركة</span>
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
+              <Share2 className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
+              مشاركة
+            </span>
           </button>
 
-          {/* 2. نسخ الرابط */}
+          {/* زر نسخ الرابط */}
           <button
             onClick={handleCopy}
-            className="py-2.5 px-1 bg-zinc-100 hover:bg-zinc-200 active:scale-95 text-zinc-800 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1 cursor-pointer"
-            title="نسخ الرابط"
+            className="flex flex-col items-center group cursor-pointer"
           >
-            {copied ? (
-              <>
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span className="text-[11px] text-emerald-600 font-bold">تم النسخ!</span>
-              </>
-            ) : (
-              <>
-                <Copy className="w-4 h-4 text-zinc-700" />
-                <span className="text-[11px] font-bold">نسخ الرابط</span>
-              </>
-            )}
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
+              {copied ? (
+                <Check className="w-5 h-5 text-emerald-600 stroke-[2.5]" />
+              ) : (
+                <Link2 className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+              )}
+            </div>
+            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
+              {copied ? 'تم النسخ!' : 'نسخ الرابط'}
+            </span>
           </button>
 
-          {/* 3. تحميل الرمز */}
+          {/* زر التنزيل */}
           <button
             onClick={handleDownload}
             disabled={!qrReady || downloading}
-            className="py-2.5 px-1 bg-primary-600 hover:bg-primary-700 active:scale-95 text-white rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1 shadow-sm cursor-pointer disabled:opacity-50"
-            title="تحميل الباركود عالي الدقة للطباعة"
+            className="flex flex-col items-center group cursor-pointer disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
-            <span className="text-[11px] font-bold">تحميل الرمز</span>
+            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-zinc-200/90 flex items-center justify-center text-zinc-800 bg-white group-hover:bg-zinc-50 group-active:scale-95 transition shadow-xs">
+              <Download className="w-5 h-5 text-zinc-800 stroke-[1.75]" />
+            </div>
+            <span className="text-[11px] font-semibold text-zinc-700 mt-1.5">
+              {downloading ? 'جاري التحميل...' : 'تنزيل'}
+            </span>
           </button>
 
         </div>
