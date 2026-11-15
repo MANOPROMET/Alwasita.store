@@ -164,6 +164,12 @@ export default function Footer() {
                                     <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-900/60 text-purple-300 font-bold">جديد</span>
                                 </Link>
                             </li>
+                            <li>
+                                <Link href="/link" className="hover:text-[var(--color-primary-soft)] transition flex items-center gap-1.5">
+                                    <span>روابط هامة</span>
+                                    <span className="px-1.5 py-0.2 rounded text-[10px] bg-purple-900/60 text-purple-300 font-bold">جديد</span>
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -235,7 +241,8 @@ export default function Footer() {
                 {/* حقوق النشر والنسخ والسياسات */}
                 <div className="border-t border-gray-800/80 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
                     <p>© {new Date().getFullYear()} {storeName}. جميع الحقوق محفوظة.</p>
-                    <div className="flex gap-6">
+                    <div className="flex flex-wrap gap-4 sm:gap-6">
+                        <Link href="/link" className="hover:text-gray-300 transition">روابط هامة</Link>
                         <Link href="/privacy" className="hover:text-gray-300 transition">سياسة الخصوصية</Link>
                         <Link href="/terms" className="hover:text-gray-300 transition">الشروط والأحكام</Link>
                     </div>

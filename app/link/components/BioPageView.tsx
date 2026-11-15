@@ -15,6 +15,7 @@ import {
   Check,
   ShoppingBag,
   ExternalLink,
+  Copy,
 } from 'lucide-react';
 import {
   FaWhatsapp,
@@ -99,6 +100,14 @@ export default function BioPageView({
       bgClass = 'bg-gradient-to-b from-[#09090b] via-[#121217] to-[#09090b]';
   }
 
+  const handleCopyUrl = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl || window.location.href);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2500);
+    } catch {}
+  };
+
   const handleShareClick = async () => {
     if (typeof navigator !== 'undefined' && navigator.share) {
       try {
@@ -111,11 +120,7 @@ export default function BioPageView({
         // user cancelled
       }
     } else {
-      try {
-        await navigator.clipboard.writeText(currentUrl || window.location.href);
-        setCopiedShare(true);
-        setTimeout(() => setCopiedShare(false), 2500);
-      } catch {}
+      handleCopyUrl();
     }
   };
 
@@ -129,7 +134,7 @@ export default function BioPageView({
       <div className="fixed bottom-0 right-1/4 w-[350px] h-[300px] bg-indigo-600/10 blur-[100px] pointer-events-none rounded-full" />
 
       {/* المحتوى الرئيسي المتمركز في المنتصف كما في Beacons القياسي */}
-      <main className="relative z-10 w-full max-w-lg mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12 flex-1 flex flex-col">
+      <main className="relative z-10 w-full max-w-lg mx-auto px-4 sm:px-6 pt-5 sm:pt-7 pb-24 flex-1 flex flex-col">
         
         {/* شريط الإجراءات العلوي */}
         <div className="flex items-center justify-between pb-6">
@@ -337,6 +342,49 @@ export default function BioPageView({
         </footer>
 
       </main>
+
+      {/* شريط الإجراءات السفلي العائم لظهور أزرار النسخ والمشاركة والباركود بشكل دائم أسفل الشاشة */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-xs sm:max-w-sm pointer-events-auto">
+        <div className="bg-zinc-900/90 hover:bg-zinc-900 border border-white/15 backdrop-blur-xl rounded-2xl p-1.5 sm:p-2 shadow-2xl flex items-center justify-between gap-1.5 sm:gap-2 transition duration-200">
+          {settings.showQrModal && (
+            <button
+              onClick={() => setQrOpen(true)}
+              className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-bold transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+              title="عرض رمز QR الخاص بالمتجر"
+            >
+              <QrCode className="w-3.5 h-3.5 text-purple-400" />
+              <span>رمز QR</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleCopyUrl}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-200 text-xs font-bold transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+            title="نسخ الرابط"
+          >
+            {copiedShare ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-emerald-400 font-bold">تم النسخ!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5 text-zinc-300" />
+                <span>نسخ الرابط</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={handleShareClick}
+            className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-black transition hover:scale-[1.02] active:scale-95 shadow-md cursor-pointer"
+            title="مشاركة الصفحة"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            <span>مشاركة</span>
+          </button>
+        </div>
+      </div>
 
       {/* نافذة عرض وتنزيل الـ QR Code */}
       <BioQrModal
