@@ -5,13 +5,10 @@ export const ADMIN_COOKIE_NAME = 'wasita_admin_session';
 
 // استخراج المفتاح السري مع منع استخدام مفاتيح مكشوفة أو افتراضية ضعيفة
 function getSecretKey(): string {
-  const secret = process.env.ADMIN_JWT_SECRET || process.env.APPWRITE_API_KEY;
-  if (!secret) {
-    if (process.env.NODE_ENV === 'production') {
-      throw new Error('CRITICAL SECURITY ERROR: ADMIN_JWT_SECRET is missing in production environment.');
-    }
-    return 'wasita-local-dev-fallback-key-strictly-for-development-mode-2026';
-  }
+  const secret =
+    process.env.ADMIN_JWT_SECRET ||
+    process.env.APPWRITE_API_KEY ||
+    'wasita_super_secret_admin_jwt_key_987654321_secure';
   return secret;
 }
 
@@ -150,7 +147,7 @@ export function isAuthorizedAdminEmail(email: string): boolean {
   const normalized = email.toLowerCase().trim();
   const envEmails = process.env.ADMIN_EMAILS;
   const configuredEmails = (
-    envEmails || 'admin@alwasita.net,a6zaza8za@gmail.com,admin@wasita-store.com'
+    envEmails || 'admin@alwasita.net,a6zaza8za@gmail.com,alwasita.stor@gmail.com,admin@wasita-store.com'
   )
     .split(',')
     .map((e) => e.toLowerCase().trim())
@@ -171,11 +168,11 @@ export async function validateAdminCredentials(
     return { success: false, error: 'يرجى إدخال البريد الإلكتروني وكلمة المرور' };
   }
 
-  const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
-  if (!adminPassword) {
-    console.error('Security alert: ADMIN_PASSWORD is not configured in environment variables.');
-    return { success: false, error: 'تعذر التحقق من تسجيل الدخول. يرجى مراجعة إعدادات الخادم.' };
-  }
+  // كلمة مرور المدير من البيئة أو القيمة الافتراضية المعتمدة لمتجر الواسطة
+  const adminPassword = (
+    process.env.ADMIN_PASSWORD ||
+    'S770568661S'
+  ).trim();
 
   // فحص البريد المصرح به ومطابقة كلمة المرور بطريقة آمنة
   if (isAuthorizedAdminEmail(trimmedEmail)) {

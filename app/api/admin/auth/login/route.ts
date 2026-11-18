@@ -11,8 +11,8 @@ export async function POST(request: Request) {
   try {
     const clientIp = getClientIp(request);
 
-    // 1. فحص معدل المحاولات (الحد من هجمات التخمين Brute-force): 5 محاولات لكل 15 دقيقة
-    const rateCheck = checkRateLimit(`admin-login:${clientIp}`, 5, 15 * 60 * 1000);
+    // 1. فحص معدل المحاولات (الحد من هجمات التخمين Brute-force): 10 محاولات لكل 15 دقيقة
+    const rateCheck = checkRateLimit(`admin-login:${clientIp}`, 10, 15 * 60 * 1000);
     if (!rateCheck.allowed) {
       const waitSeconds = Math.ceil((rateCheck.resetTime - Date.now()) / 1000);
       return NextResponse.json(
