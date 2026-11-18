@@ -69,6 +69,9 @@ function LoginForm() {
       }
 
       // نجاح تسجيل الدخول - التوجيه إلى لوحة التحكم
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('wasita_admin_session', 'active');
+      }
       router.push(redirectPath);
       router.refresh();
     } catch (err: any) {
