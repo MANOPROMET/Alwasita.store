@@ -29,12 +29,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }, 900);
     };
 
-    // استرجاع السلة من localStorage عند الفتح
+    // استرجاع السلة من localStorage عند الفتح مع تصفية أي منتجات نفدت كميتها
     useEffect(() => {
         try {
             const saved = localStorage.getItem('wasita_cart');
             if (saved) {
-                setItems(JSON.parse(saved));
+                const parsed = JSON.parse(saved) as CartItem[];
+                if (Array.isArray(parsed)) {
+                    // استبعاد أي منتج غير متوفر أو معلم بنفاد الكمية تلقائياً
+                    const validItems = parsed.filter((i) => !i.isOutOfStock);
+                    setItems(validItems);
+                }
             }
         } catch (e) {
             console.error('Failed to load cart from localStorage', e);
@@ -51,6 +56,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }, [items, isLoaded]);
 
     const addToCart = (newItem: CartItem) => {
+        // حماية صارمة: منع إضافة أي منتج نفدت كميته إلى السلة
+        if (newItem.isOutOfStock) {
+            console.warn('Blocked adding out of stock item to cart:', newItem.name);
+            return;
+        }
+
         triggerCartPulse();
         setItems((prev) => {
             const existingIndex = prev.findIndex((i) => i.id === newItem.id);

@@ -23,6 +23,8 @@ import {
     Layers,
     Share2,
     FileText,
+    PackageX,
+    AlertTriangle,
 } from 'lucide-react';
 import Link from 'next/link';
 import { Product, Variant, Color } from '@/types';
@@ -331,6 +333,10 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
     // الإضافة إلى السلة
     const handleAddToCart = () => {
+        if (product.isOutOfStock) {
+            return;
+        }
+
         const cartItemId = `${product.$id}-${selectedVariant?.$id || 'default'}-${selectedColor?.$id || 'default'}`;
 
         addToCart({
@@ -344,10 +350,21 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             variantName: (hasStorageVariants || hasOtherVariants) ? selectedVariant?.name : undefined,
             colorId: hasColors ? selectedColor?.$id : undefined,
             colorName: hasColors ? selectedColor?.name : undefined,
+            isOutOfStock: product.isOutOfStock,
         });
 
         setIsAdded(true);
         setTimeout(() => setIsAdded(false), 2500);
+    };
+
+    // الاستفسار عن موعد التوفر للمنتجات المنتهية
+    const handleWhatsAppInquiry = () => {
+        const text = `مرحباً متجر الواسطة، أود الاستفسار عن موعد توفر هذا المنتج مجدداً بالمخزون:\n\n` +
+                     `*المنتج:* ${product.name}\n` +
+                     `*الرابط:* ${typeof window !== 'undefined' ? window.location.href : ''}\n\n` +
+                     `شاكر ومقدّر لكم ✨`;
+
+        window.open(`https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(text)}`, '_blank');
     };
 
     // الطلب المباشر عبر واتساب
@@ -416,12 +433,24 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                 {/* 1. معرض الصور والـ Thumbnails */}
                 <div className="space-y-4">
                     <div className="card relative aspect-square bg-gray-50 overflow-hidden flex items-center justify-center p-8 border border-gray-100 shadow-sm rounded-3xl">
+                        {/* شارة نفدت الكمية العائمة فوق الصورة */}
+                        {product.isOutOfStock && (
+                            <div className="absolute top-4 right-4 z-20">
+                                <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-2xl font-black text-xs sm:text-sm bg-rose-600 text-white shadow-lg border border-rose-700/60 backdrop-blur-xs tracking-tight animate-fade-in">
+                                    <PackageX className="w-4 h-4" />
+                                    <span>نفدت الكمية</span>
+                                </span>
+                            </div>
+                        )}
+
                         <Image
                             src={activeImage}
                             alt={product.name}
                             fill
                             priority
-                            className="object-contain p-6 transition-all duration-300"
+                            className={`object-contain p-6 transition-all duration-300 ${
+                                product.isOutOfStock ? 'grayscale-[20%] opacity-90' : ''
+                            }`}
                         />
                     </div>
 
@@ -493,6 +522,23 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             {product.name}
                         </h1>
                     </div>
+
+                    {/* تنبيه نفدت الكمية الاحترافي */}
+                    {product.isOutOfStock && (
+                        <div className="p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-rose-50 border border-rose-200 text-rose-950 flex items-start gap-3.5 shadow-xs animate-fade-in">
+                            <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 mt-0.5">
+                                <PackageX className="w-5 h-5" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-sm sm:text-base font-black text-rose-950">
+                                    عذراً، هذا المنتج غير متوفر حالياً (نفدت الكمية)
+                                </h3>
+                                <p className="text-xs text-rose-800 leading-relaxed font-medium">
+                                    المعذرة منك، لقد انتهت كمية هذا الجهاز مؤقتاً. يمكنك استعراض كافة المواصفات والخصائص والصور بحرية، كما يمكنك مراسلتنا عبر الواتساب للاستفسار عن موعد توفر دفعة جديدة.
+                                </p>
+                            </div>
+                        </div>
+                    )}
 
                     {/* السعر المالي */}
                     {(() => {
@@ -609,13 +655,14 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     )}
 
                     {/* تحديد الكمية */}
-                    <div className="flex items-center gap-4 pt-2">
+                    <div className={`flex items-center gap-4 pt-2 ${product.isOutOfStock ? 'opacity-40 pointer-events-none' : ''}`}>
                         <span className="text-sm font-extrabold text-[var(--color-primary)]">الكمية:</span>
                         <div className="flex items-center border border-gray-200 rounded-xl overflow-hidden bg-white">
                             <button
                                 type="button"
+                                disabled={product.isOutOfStock}
                                 onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                                className="px-3.5 py-2 hover:bg-gray-100 font-bold"
+                                className="px-3.5 py-2 hover:bg-gray-100 font-bold disabled:cursor-not-allowed"
                             >
                                 -
                             </button>
@@ -624,8 +671,9 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                             </span>
                             <button
                                 type="button"
+                                disabled={product.isOutOfStock}
                                 onClick={() => setQuantity((prev) => prev + 1)}
-                                className="px-3.5 py-2 hover:bg-gray-100 font-bold"
+                                className="px-3.5 py-2 hover:bg-gray-100 font-bold disabled:cursor-not-allowed"
                             >
                                 +
                             </button>
@@ -634,36 +682,62 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
 
                     {/* أزرار الإجراءات */}
                     <div className="flex flex-col sm:flex-row gap-3 pt-4">
-                        <button
-                            type="button"
-                            onClick={handleAddToCart}
-                            className={`btn flex-1 gap-2 py-3.5 transition-all ${
-                                isAdded 
-                                    ? 'bg-green-600 text-white hover:bg-green-700' 
-                                    : 'btn-primary'
-                            }`}
-                        >
-                            {isAdded ? (
-                                <>
-                                    <Check className="w-5 h-5" />
-                                    <span>تمت الإضافة للسلة!</span>
-                                </>
-                            ) : (
-                                <>
-                                    <ShoppingCart className="w-5 h-5" />
-                                    <span>إضافة إلى السلة</span>
-                                </>
-                            )}
-                        </button>
+                        {product.isOutOfStock ? (
+                            <>
+                                <button
+                                    type="button"
+                                    disabled
+                                    className="btn flex-1 gap-2 py-3.5 bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed font-bold"
+                                    title="عذراً، لقد نفدت كمية هذا المنتج حالياً"
+                                >
+                                    <PackageX className="w-5 h-5 text-gray-400" />
+                                    <span>نفدت الكمية (غير متاح للطلب)</span>
+                                </button>
 
-                        <button
-                            type="button"
-                            onClick={handleWhatsAppOrder}
-                            className="btn bg-[#25D366] hover:bg-[#20bd5a] text-white flex-1 gap-2 py-3.5"
-                        >
-                            <MessageCircle className="w-5 h-5" />
-                            <span>طلب مباشر عبر واتساب</span>
-                        </button>
+                                <button
+                                    type="button"
+                                    onClick={handleWhatsAppInquiry}
+                                    className="btn bg-slate-900 hover:bg-slate-800 text-white flex-1 gap-2 py-3.5 font-bold shadow-xs cursor-pointer"
+                                    title="الاستفسار عن موعد توفر دفعة جديدة"
+                                >
+                                    <MessageCircle className="w-5 h-5 text-emerald-400" />
+                                    <span>الاستفسار عن موعد التوفر</span>
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <button
+                                    type="button"
+                                    onClick={handleAddToCart}
+                                    className={`btn flex-1 gap-2 py-3.5 transition-all ${
+                                        isAdded 
+                                            ? 'bg-green-600 text-white hover:bg-green-700' 
+                                            : 'btn-primary'
+                                    }`}
+                                >
+                                    {isAdded ? (
+                                        <>
+                                            <Check className="w-5 h-5" />
+                                            <span>تمت الإضافة للسلة!</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShoppingCart className="w-5 h-5" />
+                                            <span>إضافة إلى السلة</span>
+                                        </>
+                                    )}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleWhatsAppOrder}
+                                    className="btn bg-[#25D366] hover:bg-[#20bd5a] text-white flex-1 gap-2 py-3.5"
+                                >
+                                    <MessageCircle className="w-5 h-5" />
+                                    <span>طلب مباشر عبر واتساب</span>
+                                </button>
+                            </>
+                        )}
 
                         {/* أزرار التفاعل: المفضلة والمشاركة */}
                         <div className="flex items-center gap-2.5">

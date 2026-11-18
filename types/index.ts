@@ -75,6 +75,7 @@ export interface Product {
     mainImageFileId?: string;
     isActive: boolean;
     isFeatured?: boolean;
+    isOutOfStock?: boolean;
     stock?: number;
     category?: Category | string;
     brand?: Brand | string;
@@ -123,6 +124,7 @@ export interface CartItem {
     variantName?: string;
     colorId?: string;
     colorName?: string;
+    isOutOfStock?: boolean;
 }
 
 export interface OrderCheckoutInput {

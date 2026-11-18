@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ShoppingCart, Eye, Heart, Loader2 } from 'lucide-react';
+import { ShoppingCart, Eye, Heart, Loader2, PackageX } from 'lucide-react';
 import { Product } from '@/types';
 import { useCurrency } from '@/context/CurrencyContext';
 import { useWishlist } from '@/context/WishlistContext';
@@ -51,11 +51,18 @@ export default function ProductCard({ product }: ProductCardProps) {
                     <Heart className={`w-4 h-4 transition-transform ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
                 </button>
 
-                {/* شارة الخصم */}
-                {hasDiscount && (
-                    <span className="badge badge-danger absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-10 font-bold text-[10px] sm:text-xs">
-                        خصم {discountPercent}%
+                {/* شارة نفدت الكمية أو شارة الخصم */}
+                {product.isOutOfStock ? (
+                    <span className="absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-10 inline-flex items-center gap-1 font-black text-[10px] sm:text-[11px] px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-md border border-rose-700/60 tracking-tight animate-fade-in">
+                        <PackageX className="w-3.5 h-3.5" />
+                        <span>نفدت الكمية</span>
                     </span>
+                ) : (
+                    hasDiscount && (
+                        <span className="badge badge-danger absolute top-2.5 sm:top-3 right-2.5 sm:right-3 z-10 font-bold text-[10px] sm:text-xs">
+                            خصم {discountPercent}%
+                        </span>
+                    )
                 )}
 
                 {/* شارة حالة المنتج (جديد / مستخدم أمريكي / مستخدم محلي / إلخ) */}
@@ -90,9 +97,17 @@ export default function ProductCard({ product }: ProductCardProps) {
                         onError={() => setIsImageLoading(false)}
                         className={`object-contain p-4 group-hover:scale-105 transition-all duration-300 ${
                             isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-                        }`}
+                        } ${product.isOutOfStock ? 'grayscale-[35%] opacity-85' : ''}`}
                     />
                 </Link>
+
+                {/* شريط نفدت الكمية السفلي فوق الصورة */}
+                {product.isOutOfStock && (
+                    <div className="absolute inset-x-0 bottom-0 z-10 py-1.5 px-3 bg-slate-950/85 backdrop-blur-xs text-white text-center text-[10px] sm:text-[11px] font-bold flex items-center justify-center gap-1.5">
+                        <PackageX className="w-3 h-3 text-rose-400" />
+                        <span>نفدت الكمية - استعراض المواصفات</span>
+                    </div>
+                )}
 
                 {/* أزرار سريعة تظهر عند التمرير */}
                 <div className="absolute bottom-3 inset-x-3 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
@@ -149,13 +164,25 @@ export default function ProductCard({ product }: ProductCardProps) {
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center hover:bg-[var(--color-primary)] hover:text-white transition shadow-2xs shrink-0"
-                        aria-label="إضافة إلى السلة"
-                    >
-                        <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </button>
+                    {product.isOutOfStock ? (
+                        <Link
+                            href={`/products/${product.$id}`}
+                            className="px-2.5 py-1.5 rounded-lg sm:rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-900 text-[11px] font-bold flex items-center gap-1 transition shrink-0"
+                            title="المنتج غير متوفر للطلب - انقر لعرض المواصفات"
+                        >
+                            <span>التفاصيل</span>
+                            <Eye className="w-3 h-3 text-gray-400" />
+                        </Link>
+                    ) : (
+                        <Link
+                            href={`/products/${product.$id}`}
+                            className="w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg sm:rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center hover:bg-[var(--color-primary)] hover:text-white transition shadow-2xs shrink-0 cursor-pointer"
+                            aria-label="عرض الخيارات والطلب"
+                            title="عرض الخيارات والطلب"
+                        >
+                            <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        </Link>
+                    )}
                 </div>
             </div>
         </div>

@@ -15,6 +15,7 @@ import {
   Tag,
   Palette,
   Layers,
+  PackageX,
 } from 'lucide-react';
 
 import KeySpecsEditor, { SpecItem, SPEC_TEMPLATES } from '../components/KeySpecsEditor';
@@ -41,6 +42,7 @@ export default function NewProductPage() {
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isOffer, setIsOffer] = useState(false);
+  const [isOutOfStock, setIsOutOfStock] = useState(false);
   const [compareAtPrice, setCompareAtPrice] = useState('');
   const [condition, setCondition] = useState<'new' | 'used'>('new');
   const [conditionLabel, setConditionLabel] = useState('جديد');
@@ -210,6 +212,7 @@ export default function NewProductPage() {
       formData.append('isActive', String(isActive));
       formData.append('isFeatured', String(isFeatured));
       formData.append('isOffer', String(isOffer));
+      formData.append('isOutOfStock', String(isOutOfStock));
       formData.append('condition', condition);
       formData.append('conditionLabel', conditionLabel);
       if (compareAtPrice) formData.append('compareAtPrice', compareAtPrice);
@@ -360,6 +363,32 @@ export default function NewProductPage() {
                 <label htmlFor="newIsOffer" className="text-xs space-y-0.5 cursor-pointer">
                   <span className="font-black text-gray-900 block">إدراج في "قسم وصفحة العروض" 🔥</span>
                   <span className="text-gray-500 block">يظهر المنتج في تبويب العروض بالرئيسية وصفحة /offers.</span>
+                </label>
+              </div>
+            </div>
+
+            {/* حالة توفر المنتج بالمخزون: نفدت الكمية */}
+            <div className={`sm:col-span-2 p-4 rounded-2xl border transition ${
+              isOutOfStock
+                ? 'bg-rose-50/70 border-rose-300'
+                : 'bg-gray-50/80 border-gray-200'
+            }`}>
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="newIsOutOfStock"
+                  checked={isOutOfStock}
+                  onChange={(e) => setIsOutOfStock(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded text-rose-600 focus:ring-rose-500 cursor-pointer"
+                />
+                <label htmlFor="newIsOutOfStock" className="text-xs space-y-1 cursor-pointer">
+                  <span className="font-black text-rose-700 flex items-center gap-1.5 text-sm">
+                    <PackageX className="w-4 h-4" />
+                    <span>نفدت الكمية (المنتج غير متوفر للطلب حالياً)</span>
+                  </span>
+                  <span className="text-gray-600 block leading-relaxed">
+                    عند تفعيل هذا الخيار: يبقى المنتج معروضاً في المتجر ويتمكن العملاء من استعراض صوره ومواصفاته بالكامل، لكن تتعطل أزرار الإضافة إلى السلة وإتمام الطلب وتظهر شارة "نفدت الكمية" الاحترافية عليه لمنع الشراء.
+                  </span>
                 </label>
               </div>
             </div>

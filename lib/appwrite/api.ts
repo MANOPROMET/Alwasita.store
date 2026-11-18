@@ -124,6 +124,7 @@ async function enrichProducts(products: Product[]): Promise<Product[]> {
 
             return {
                 ...product,
+                isOutOfStock: Boolean((product as any).isOutOfStock),
                 condition,
                 conditionLabel,
                 keySpecs,

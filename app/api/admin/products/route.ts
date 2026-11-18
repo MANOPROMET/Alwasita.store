@@ -33,6 +33,7 @@ export async function POST(request: Request) {
     const isActive = formData.get('isActive') === 'true';
     const isFeatured = formData.get('isFeatured') === 'true';
     const isOffer = formData.get('isOffer') === 'true';
+    const isOutOfStock = formData.get('isOutOfStock') === 'true';
     const compareAtPriceRaw = formData.get('compareAtPrice') as string;
     const compareAtPrice = compareAtPriceRaw ? parseFloat(compareAtPriceRaw) : undefined;
 
@@ -89,6 +90,7 @@ export async function POST(request: Request) {
       isActive: Boolean(isActive),
       isFeatured: Boolean(isFeatured),
       isOffer: Boolean(isOffer),
+      isOutOfStock: Boolean(isOutOfStock),
       condition: condition === 'used' ? 'used' : 'new',
       conditionLabel: conditionLabel.trim() || (condition === 'used' ? 'مستخدم' : 'جديد'),
       hidePrice: false,
@@ -205,6 +207,7 @@ export async function PUT(request: Request) {
     const isActive = formData.get('isActive') === 'true';
     const isFeatured = formData.has('isFeatured') ? formData.get('isFeatured') === 'true' : undefined;
     const isOffer = formData.has('isOffer') ? formData.get('isOffer') === 'true' : undefined;
+    const isOutOfStock = formData.has('isOutOfStock') ? formData.get('isOutOfStock') === 'true' : undefined;
     const compareAtPriceRaw = formData.get('compareAtPrice') as string;
     const compareAtPrice = compareAtPriceRaw ? parseFloat(compareAtPriceRaw) : undefined;
 
@@ -247,6 +250,7 @@ export async function PUT(request: Request) {
 
     if (isFeatured !== undefined) productPayload.isFeatured = Boolean(isFeatured);
     if (isOffer !== undefined) productPayload.isOffer = Boolean(isOffer);
+    if (isOutOfStock !== undefined) productPayload.isOutOfStock = Boolean(isOutOfStock);
     if (compareAtPrice !== undefined) {
       productPayload.compareAtPrice = compareAtPrice;
     }
@@ -450,7 +454,7 @@ export async function PUT(request: Request) {
 export async function PATCH(request: Request) {
   try {
     const body = await request.json();
-    const { id, isFeatured, isOffer, isActive } = body;
+    const { id, isFeatured, isOffer, isActive, isOutOfStock } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'معرف المنتج مطلوب' }, { status: 400 });
@@ -460,6 +464,7 @@ export async function PATCH(request: Request) {
     if (isFeatured !== undefined) payload.isFeatured = Boolean(isFeatured);
     if (isOffer !== undefined) payload.isOffer = Boolean(isOffer);
     if (isActive !== undefined) payload.isActive = Boolean(isActive);
+    if (isOutOfStock !== undefined) payload.isOutOfStock = Boolean(isOutOfStock);
 
     const updated = await databases.updateDocument(DATABASE_ID, 'products', id, payload);
     return NextResponse.json({ success: true, product: updated });

@@ -68,6 +68,28 @@ export async function POST(request: Request) {
             );
         }
 
+        // فحص توافر المخزون ومنع إتمام الطلب نهائياً إذا كانت كمية أي منتج قد نفدت
+        const productIds = Array.from(new Set(items.map((i) => i.productId).filter(Boolean)));
+        if (productIds.length > 0) {
+            const productDocs = await Promise.all(
+                productIds.map(async (pid) => {
+                    try {
+                        return await databases.getDocument(DATABASE_ID, 'products', pid);
+                    } catch {
+                        return null;
+                    }
+                })
+            );
+            for (const doc of productDocs) {
+                if (doc && doc.isOutOfStock) {
+                    return NextResponse.json(
+                        { error: `عذراً، لقد نفدت كمية المنتج (${doc.name}) حالياً ولم يعد متاحاً للطلب.` },
+                        { status: 400 }
+                    );
+                }
+            }
+        }
+
         const parsedTotal = Number(totalPrice);
         if (isNaN(parsedTotal) || parsedTotal <= 0 || !isFinite(parsedTotal)) {
             return NextResponse.json(

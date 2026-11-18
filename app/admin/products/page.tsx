@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { getProducts, getCategories, deleteProduct, getProductImageUrl } from '@/lib/appwrite/api';
 import { databases } from '@/lib/appwrite/server';
-import { Plus, ArrowRight, Trash2, Edit, PackageOpen, Search, Filter, Eye, EyeOff, Sparkles, Flame } from 'lucide-react';
+import { Plus, ArrowRight, Trash2, Edit, PackageOpen, Search, Filter, Eye, EyeOff, Sparkles, Flame, PackageX, PackageCheck } from 'lucide-react';
 import { revalidatePath } from 'next/cache';
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID || 'al_wasita_store';
@@ -31,10 +31,12 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
 
   const activeCount = allProducts.filter((p) => p.isActive).length;
   const hiddenCount = allProducts.filter((p) => !p.isActive).length;
+  const outOfStockCount = allProducts.filter((p) => p.isOutOfStock).length;
 
   const products = allProducts.filter((p) => {
     if (statusFilter === 'active') return p.isActive;
     if (statusFilter === 'hidden') return !p.isActive;
+    if (statusFilter === 'out_of_stock') return p.isOutOfStock;
     return true;
   });
 
@@ -45,6 +47,22 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
     if (productId) {
       // استدعاء الحذف مع إعادة التحقق
       await deleteProduct(productId);
+      revalidatePath('/admin/products');
+      revalidatePath('/products');
+      revalidatePath('/');
+      revalidatePath('/offers');
+    }
+  }
+
+  // تبديل حالة "نفدت الكمية" مباشرة
+  async function handleToggleOutOfStock(formData: FormData) {
+    'use server';
+    const productId = formData.get('productId') as string;
+    const currentVal = formData.get('currentVal') === 'true';
+    if (productId) {
+      await databases.updateDocument(DATABASE_ID, 'products', productId, {
+        isOutOfStock: !currentVal,
+      });
       revalidatePath('/admin/products');
       revalidatePath('/products');
       revalidatePath('/');
@@ -202,6 +220,22 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
             <span className="w-2 h-2 rounded-full bg-amber-400"></span>
             <span>مخفي من المتجر ({hiddenCount})</span>
           </Link>
+
+          <Link
+            href={`/admin/products?${new URLSearchParams({
+              ...(searchQuery ? { query: searchQuery } : {}),
+              ...(categoryId ? { category: categoryId } : {}),
+              status: 'out_of_stock',
+            }).toString()}`}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition shrink-0 flex items-center gap-1.5 ${
+              statusFilter === 'out_of_stock'
+                ? 'bg-rose-600 text-white shadow-xs'
+                : 'bg-rose-50 text-rose-700 hover:bg-rose-100'
+            }`}
+          >
+            <span className="w-2 h-2 rounded-full bg-rose-400"></span>
+            <span>نفدت الكمية ({outOfStockCount})</span>
+          </Link>
         </div>
 
         {/* فلاتر الأقسام */}
@@ -254,7 +288,8 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                   <th className="py-4 px-6">المنتج</th>
                   <th className="py-4 px-6">السعر الأساسي</th>
                   <th className="py-4 px-6 text-center">الأكثر طلباً / العروض</th>
-                  <th className="py-4 px-6">الحالة</th>
+                  <th className="py-4 px-6 text-center">المخزون</th>
+                  <th className="py-4 px-6">حالة العرض</th>
                   <th className="py-4 px-6 text-center">الإجراءات</th>
                 </tr>
               </thead>
@@ -374,6 +409,43 @@ export default async function AdminProductsPage({ searchParams }: PageProps) {
                             </button>
                           </form>
                         </div>
+                      </td>
+
+                      {/* المخزون وتحديد نفدت الكمية */}
+                      <td className="py-4 px-6 text-center">
+                        <form action={handleToggleOutOfStock}>
+                          <input type="hidden" name="productId" value={product.$id} />
+                          <input
+                            type="hidden"
+                            name="currentVal"
+                            value={String(Boolean(product.isOutOfStock))}
+                          />
+                          <button
+                            type="submit"
+                            title={
+                              product.isOutOfStock
+                                ? 'المنتج معلم كـ "نفدت الكمية"، انقر للتحويل إلى متوفر'
+                                : 'المنتج متوفر بالمخزون، انقر للتحويل إلى "نفدت الكمية"'
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black transition cursor-pointer border shadow-2xs ${
+                              product.isOutOfStock
+                                ? 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'
+                            }`}
+                          >
+                            {product.isOutOfStock ? (
+                              <>
+                                <PackageX className="w-3.5 h-3.5 text-rose-600" />
+                                <span>نفدت الكمية</span>
+                              </>
+                            ) : (
+                              <>
+                                <PackageCheck className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>متوفر</span>
+                              </>
+                            )}
+                          </button>
+                        </form>
                       </td>
 
                       {/* الحالة مع إمكانية التبديل بنقرة واحدة */}
